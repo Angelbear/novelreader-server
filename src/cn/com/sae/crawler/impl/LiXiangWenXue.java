@@ -2,6 +2,7 @@ package cn.com.sae.crawler.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -44,6 +46,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 						result.name = d.text();
 						result.url = d.getElementsByTag("a").get(0)
 								.attr("href");
+						result.from = this.crawlerName();
 						results.add(result);
 					}
 				}
@@ -114,6 +117,8 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		return String.format("%x", new BigInteger(1, arg.getBytes("utf-8")));
 	}
 
+	public static final String NBSP_IN_UTF8 = "\u00a0";
+
 	@Override
 	public Section getSection(SectionInfo sec) {
 		try {
@@ -128,7 +133,11 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 							.getElementsByTag("p").get(0);
 					Section section = new Section();
 					section.title = title.text();
-					section.text = text.text();
+					Document secText = Jsoup.parseBodyFragment(text.text());
+					secText.outputSettings().prettyPrint(false);
+					secText.outputSettings().escapeMode(EscapeMode.xhtml);
+					section.text = secText.text().replace(NBSP_IN_UTF8, "");
+					System.out.println(section.text);
 					return section;
 				}
 			}
@@ -136,5 +145,10 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 
 		}
 		return null;
+	}
+
+	@Override
+	public String crawlerName() {
+		return "lixiangwenxue";
 	}
 }
