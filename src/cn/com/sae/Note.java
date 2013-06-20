@@ -54,7 +54,15 @@ public class Note extends HttpServlet {
 
 	private void doGetBookInfo(Map<String, String[]> params,
 			HttpServletResponse response) throws ServletException, IOException {
-
+		if (params != null && params.get("key_word") != null
+				&& params.get("key_word").length > 0) {
+			_writeOKHTMLHeader(response);
+			response.getWriter().println(
+					JSON.encode(NovelSearchEngine.searchNote(params
+							.get("key_word")[0])));
+		} else {
+			_errorOutput(response);
+		}
 	}
 
 	private void doRetriveSections(Map<String, String[]> params,
