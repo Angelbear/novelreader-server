@@ -1,8 +1,6 @@
 package cn.com.sae;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -11,13 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.arnx.jsonic.JSON;
-
 import cn.com.sae.controller.NovelSearchEngine;
-import cn.com.sae.crawler.impl.LiXiangWenXue;
 import cn.com.sae.model.SearchResult;
-import cn.com.sae.model.novel.Book;
-import cn.com.sae.model.novel.Section;
-import cn.com.sae.model.novel.SectionInfo;
+import cn.com.sae.utils.DataValidator;
 
 public class Note extends HttpServlet {
 
@@ -39,27 +33,45 @@ public class Note extends HttpServlet {
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
+	private static String[][] searchNoteRules = { { "key_word", "Str",
+			"NotEmpty" } };
+	private static DataValidator searchNoteValidator = new DataValidator(
+			searchNoteRules);
+
 	private void doSearchNote(Map<String, String[]> params,
 			HttpServletResponse response) throws ServletException, IOException {
-		if (params != null && params.get("key_word") != null
-				&& params.get("key_word").length > 0) {
+
+		Map<String, String> opts = searchNoteValidator
+				.validateHttpParamData(params);
+
+		if (opts != null) {
 			_writeOKHTMLHeader(response);
 			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.searchNote(params
-							.get("key_word")[0])));
+					JSON.encode(NovelSearchEngine.searchNote(opts
+							.get("key_word"))));
 		} else {
 			_errorOutput(response);
 		}
 	}
 
+	private static String[][] getBookInfoRules = {
+			{ "from", "Str", "NotEmpty" }, { "url", "Str", "NotEmpty" } };
+
+	private static DataValidator getBookInfoValidator = new DataValidator(
+			getBookInfoRules);
+
 	private void doGetBookInfo(Map<String, String[]> params,
 			HttpServletResponse response) throws ServletException, IOException {
-		if (params != null && params.get("key_word") != null
-				&& params.get("key_word").length > 0) {
+
+		Map<String, String> opts = getBookInfoValidator
+				.validateHttpParamData(params);
+		if (opts != null) {
 			_writeOKHTMLHeader(response);
+			SearchResult result = new SearchResult();
+			result.url = opts.get("url");
 			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.searchNote(params
-							.get("key_word")[0])));
+					JSON.encode(NovelSearchEngine.getBookInfoFromSearchResult(
+							result, opts.get("from"))));
 		} else {
 			_errorOutput(response);
 		}
