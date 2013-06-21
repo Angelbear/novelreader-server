@@ -30,7 +30,6 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 			String searchURL = "http://www.03wx.com/modules/article/03so.php?searchkey="
 					+ java.net.URLEncoder.encode(keyWord, "gbk")
 					+ "&searchtype=articlename&searchom=%CB%D1+%CB%F7";
-			System.out.println(searchURL);
 			String html = this.fetchUrl.fetch(searchURL);
 			Document doc = Jsoup.parse(html);
 			Elements resultTable = doc.getElementsByClass("grid");
@@ -93,7 +92,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 					while (tr.hasNext()) {
 						Elements tds = tr.next().getElementsByClass("bc003");
 						Iterator<Element> td = tds.listIterator();
-						if (td.hasNext()) {
+						while (td.hasNext()) {
 							Element d = td.next();
 							SectionInfo result = new SectionInfo();
 							result.name = d.getElementsByTag("a").get(0)
@@ -137,7 +136,6 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 					secText.outputSettings().prettyPrint(false);
 					secText.outputSettings().escapeMode(EscapeMode.xhtml);
 					section.text = secText.text().replace(NBSP_IN_UTF8, "");
-					System.out.println(section.text);
 					return section;
 				}
 			}

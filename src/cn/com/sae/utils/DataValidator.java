@@ -27,7 +27,6 @@ public class DataValidator {
 
 	private boolean _validateField(String src, String[] rules) {
 		String rule = rules[0];
-		System.out.println(src + " " + rule);
 		if (rule.equals("Str")) {
 			if (rules.length < 2)
 				return true;

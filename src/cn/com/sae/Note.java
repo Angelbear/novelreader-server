@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import net.arnx.jsonic.JSON;
 import cn.com.sae.controller.NovelSearchEngine;
 import cn.com.sae.model.SearchResult;
+import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.utils.DataValidator;
 
 public class Note extends HttpServlet {
@@ -77,20 +79,53 @@ public class Note extends HttpServlet {
 		}
 	}
 
+	private static String[][] retriveSectionsRules = {
+			{ "from", "Str", "NotEmpty" }, { "url", "Str", "NotEmpty" } };
+
+	private static DataValidator retriveSectionsRulesValidator = new DataValidator(
+			retriveSectionsRules);
+
 	private void doRetriveSections(Map<String, String[]> params,
 			HttpServletResponse response) throws ServletException, IOException {
-
+		Map<String, String> opts = retriveSectionsRulesValidator
+				.validateHttpParamData(params);
+		if (opts != null) {
+			_writeOKHTMLHeader(response);
+			Book result = new Book();
+			result.url = opts.get("url");
+			response.getWriter().println(
+					JSON.encode(NovelSearchEngine.retriveBookSections(result,
+							opts.get("from"))));
+		} else {
+			_errorOutput(response);
+		}
 	}
 
-	private void doGeSection(Map<String, String[]> params,
-			HttpServletResponse response) {
+	private static String[][] getSectionRules = {
+			{ "from", "Str", "NotEmpty" }, { "url", "Str", "NotEmpty" } };
 
+	private static DataValidator getSectionValidator = new DataValidator(
+			getSectionRules);
+
+	private void doGeSection(Map<String, String[]> params,
+			HttpServletResponse response) throws ServletException, IOException {
+		Map<String, String> opts = getSectionValidator
+				.validateHttpParamData(params);
+		if (opts != null) {
+			_writeOKHTMLHeader(response);
+			SectionInfo result = new SectionInfo();
+			result.url = opts.get("url");
+			response.getWriter().println(
+					JSON.encode(NovelSearchEngine.getSection(result,
+							opts.get("from"))));
+		} else {
+			_errorOutput(response);
+		}
 	}
 
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		String uri = request.getRequestURI();
-		System.out.println(uri);
 		if (uri.equals("/note/search_novel")) {
 			doSearchNote(request.getParameterMap(), response);
 		} else if (uri.equals("/note/get_book_info")) {
