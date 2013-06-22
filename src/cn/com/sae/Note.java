@@ -31,12 +31,12 @@ public class Note extends HttpServlet {
 	}
 
 	private void _writeOKHTMLHeader(HttpServletResponse response) {
-		response.setContentType("text/html");
+		response.setContentType("text/html;charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
-	private static String[][] searchNoteRules = { { "key_word", "Str",
-			"NotEmpty" } };
+	private static String[][] searchNoteRules = {
+			{ "key_word", "Str", "NotEmpty" }, { "from", "Str" } };
 	private static DataValidator searchNoteValidator = new DataValidator(
 			searchNoteRules);
 
@@ -49,8 +49,8 @@ public class Note extends HttpServlet {
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
 			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.searchNote(opts
-							.get("key_word"))));
+					JSON.encode(NovelSearchEngine.searchNote(
+							opts.get("key_word"), opts.get("from"))));
 		} else {
 			_errorOutput(response);
 		}

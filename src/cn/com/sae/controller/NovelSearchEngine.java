@@ -5,9 +5,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.crawler.impl.LiXiangWenXue;
+import cn.com.sae.crawler.impl.LuoQiuZhongWen;
+import cn.com.sae.crawler.impl.WuJiuWenXue;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
 import cn.com.sae.model.novel.Section;
@@ -18,13 +21,29 @@ public class NovelSearchEngine {
 
 	public static void init() {
 		LiXiangWenXue li = new LiXiangWenXue();
+		LuoQiuZhongWen luo = new LuoQiuZhongWen();
+		WuJiuWenXue wujiu = new WuJiuWenXue();
 		// TODO
 		crawlerImpl.put(li.crawlerName(), li);
+		crawlerImpl.put(luo.crawlerName(), luo);
+		crawlerImpl.put(wujiu.crawlerName(), wujiu);
+	}
+
+	public static List<SearchResult> searchNote(String keyWord, String from) {
+		List<SearchResult> results = new ArrayList<SearchResult>();
+		if (from == null) {
+			return searchNote(keyWord);
+		}
+		if (crawlerImpl.get(from) != null) {
+			results.addAll(crawlerImpl.get(from).searchNote(keyWord));
+		}
+		return results;
 	}
 
 	public static List<SearchResult> searchNote(String keyWord) {
 		List<SearchResult> results = new ArrayList<SearchResult>();
-		Iterator itr = crawlerImpl.entrySet().iterator();
+		Iterator<Entry<String, WebSiteCrawler>> itr = crawlerImpl.entrySet()
+				.iterator();
 		while (itr.hasNext()) {
 			Map.Entry<String, WebSiteCrawler> pairs = (Map.Entry<String, WebSiteCrawler>) itr
 					.next();

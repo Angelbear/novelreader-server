@@ -46,7 +46,6 @@ public class DataValidator {
 			return (src.equals("0") || src.equals("1"));
 		} else if (rules.equals("Regex")) {
 			String pattern = rules[1];
-			System.out.println(src + " " + pattern);
 			Pattern p = Pattern.compile(pattern);
 			Matcher m = p.matcher(src);
 			return m.matches();
@@ -62,12 +61,16 @@ public class DataValidator {
 					.next();
 			String key = pair.getKey();
 			String[] rules = pair.getValue();
-			String param = data.get(key)[0];
-			if (data.get(key) == null || data.get(key).length == 0
-					|| !_validateField(param, rules)) {
+			String[] param = data.get(key);
+			String src = null;
+			if (param != null && param.length > 0) {
+				src = param[0];
+			}
+			;
+			if (_validateField(src, rules) == false) {
 				return null;
-			} else {
-				result.put(key, data.get(key)[0]);
+			} else if (src != null && src.length() > 0) {
+				result.put(key, src);
 			}
 		}
 
