@@ -31,7 +31,7 @@ public class Note extends HttpServlet {
 	}
 
 	private void _writeOKHTMLHeader(HttpServletResponse response) {
-		response.setContentType("text/html;charset=utf-8");
+		response.setContentType("application/json;charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
