@@ -17,7 +17,10 @@ public class Note extends HttpServlet {
 	private static final long serialVersionUID = 2056174360882626087L;
 
 	public Note() {
-		NovelSearchEngine.init();
+	}
+
+	public void init() {
+		NovelSearchEngine.init(this.getServletConfig());
 	}
 
 	private void _errorOutput(HttpServletResponse response)

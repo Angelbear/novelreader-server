@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.ServletConfig;
+
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.crawler.impl.LiXiangWenXue;
 import cn.com.sae.crawler.impl.LuoQiuZhongWen;
@@ -21,17 +23,30 @@ import cn.com.sae.utils.ProxyUtils;
 public class NovelSearchEngine {
 	private static HashMap<String, WebSiteCrawler> crawlerImpl = new HashMap<String, WebSiteCrawler>();
 
-	public static void init() {
-		WebSiteCrawler li = new LiXiangWenXue();
-		WebSiteCrawler li_proxy = (WebSiteCrawler)ProxyUtils.createProxy(WebSiteCrawler.class, new CacheInvocationHandler(li));
-		WebSiteCrawler luo = new LuoQiuZhongWen();
-		WebSiteCrawler luo_proxy = (WebSiteCrawler)ProxyUtils.createProxy(WebSiteCrawler.class, new CacheInvocationHandler(luo));
-		WebSiteCrawler wujiu = new WuJiuWenXue();
-		WebSiteCrawler wujiu_proxy = (WebSiteCrawler)ProxyUtils.createProxy(WebSiteCrawler.class, new CacheInvocationHandler(wujiu));
-		// TODO
-		crawlerImpl.put(li.crawlerName(), li_proxy);
-		crawlerImpl.put(luo.crawlerName(), luo_proxy);
-		crawlerImpl.put(wujiu.crawlerName(), wujiu_proxy);
+	public static void init(ServletConfig config) {
+		String crawlerClasses = config.getInitParameter("crawler.classes");
+
+		if (crawlerClasses == null || crawlerClasses.equals(""))
+			throw new RuntimeException("Please define crawler classes");
+
+		String[] classes = crawlerClasses.split(",");
+
+		for (String cls : classes) {
+			try {
+				WebSiteCrawler crawler = (WebSiteCrawler) Class.forName(cls)
+						.newInstance();
+				WebSiteCrawler crawlerProxy = (WebSiteCrawler) ProxyUtils
+						.createProxy(WebSiteCrawler.class,
+								new CacheInvocationHandler(crawler));
+				crawlerImpl.put(crawler.crawlerName(), crawlerProxy);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public static List<SearchResult> searchNote(String keyWord, String from) {
@@ -57,8 +72,7 @@ public class NovelSearchEngine {
 		return results;
 	}
 
-	public static Book getBookInfoFromSearchResult(String resultUrl,
-			String from) {
+	public static Book getBookInfoFromSearchResult(String resultUrl, String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
 			return crawler.getBookInfoFromSearchResult(resultUrl);
@@ -66,7 +80,8 @@ public class NovelSearchEngine {
 		return null;
 	}
 
-	public static List<SectionInfo> retriveBookSections(String bookUrl, String from) {
+	public static List<SectionInfo> retriveBookSections(String bookUrl,
+			String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
 			return crawler.retriveBookSections(bookUrl);

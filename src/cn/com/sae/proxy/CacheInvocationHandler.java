@@ -79,18 +79,20 @@ public class CacheInvocationHandler implements InvocationHandler {
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
-		System.out.println(method.getName());
+		String func = proxied.getClass().getName() + "-" + method.getName();
+		System.out.println(func);
 
 		if (doesCacheInMemcached(method)) {
-			Object cached = getSearchResultFromMemcached(method.getName(), args);
+			Object cached = getSearchResultFromMemcached(func, args);
 			if (cached != null) {
 				return cached;
 			}
 		}
 
 		if (doesCacheInSaeKV(method)) {
-			Object cached = getSearchResultFromSaeKV(method.getName(), args);
+			Object cached = getSearchResultFromSaeKV(func, args);
 			if (cached != null) {
+				putSearchResultToMemcached(cached, func, args);
 				return cached;
 			}
 		}
@@ -98,10 +100,10 @@ public class CacheInvocationHandler implements InvocationHandler {
 		Object result = method.invoke(proxied, args);
 
 		if (doesCacheInMemcached(method)) {
-			putSearchResultToMemcached(result, method.getName(), args);
+			putSearchResultToMemcached(result, func, args);
 		}
 		if (doesCacheInSaeKV(method)) {
-			putSearchResultToSaeKV(result, method.getName(), args);
+			putSearchResultToSaeKV(result, func, args);
 		}
 
 		return result;
