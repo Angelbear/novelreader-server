@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="war" name="xiaoshuoyuedu">
+ <property name="app-name" value="xiaoshuoyuedu" />
+ <property name="src" value="src" />
+ <property name="dist" value="dist" />
+ <property name="classes" value="WebContent/WEB-INF/classes" />
+ <property name="lib" value="WebContent/WEB-INF/lib" />
+ <property name="ext-lib" value="ext-lib" />
+ <property name="tomcat-lib" value="/Library/Tomcat/lib/" />
+ <property name="charset" value="UTF-8" />
+ <property name="javadoc-packagenames" value="cn.com.sae,cn.com.sae.controller,cn.com.sae.crawler,cn.com.sae.crawler.impl,cn.com.sae.model,cn.com.sae.novel,cn.com.sae.utils" />
+
+ <patternset id="resources">
+  <include name="**/*.jpe" />
+  <include name="**/*.jpeg" />
+  <include name="**/*.rmf" />
+  <include name="**/*.wav" />
+  <include name="**/*.midi" />
+  <include name="**/*.mid" />
+  <include name="**/*.au" />
+  <include name="**/*.gif" />
+  <include name="**/*.png" />
+  <include name="**/*.jpg" />
+  <include name="**/*.aiff" />
+  <include name="**/*.properties" />
+  <include name="**/*.txt" />
+  <include name="**/*.xml" />
+ </patternset>
+
+ <path id="classpath">
+  <pathelement location="${dist}" />
+  <fileset dir="${lib}">
+   <include name="*.jar" />
+  </fileset>
+  <fileset dir="${ext-lib}">
+   <include name="*.jar" />
+  </fileset>
+  <fileset dir="${tomcat-lib}">
+   <include name="*.jar" />
+  </fileset>
+ </path>
+
+ <target name="init">
+  <mkdir dir="${dist}" />
+  <mkdir dir="${classes}" />
+ </target>
+
+ <target name="war" depends="resource, jar">
+  <!--touch file="WEB-INF/web.xml"/-->
+  <war compress="false" destfile="${dist}/${app-name}.war" webxml="WebContent/WEB-INF/web.xml">
+   <fileset dir="WebContent">
+    <include name="**/*.*" />
+    <exclude name="WEB-INF/" />
+   </fileset>
+   <fileset dir="WebContent">
+    <include name="WEB-INF/*.*" />
+    <exclude name="WEB-INF/web.xml" />
+    <exclude name="WEB-INF/${app-name}.xml" />
+    <exclude name="lib/" />
+   </fileset>
+   <lib dir="${lib}">
+    <include name="*.jar" />
+   </lib>
+   <!--
+   <lib dir="${dist}">
+    <include name="*.jar" />
+   </lib>
+   -->
+   <classes dir="${classes}" />
+  </war>
+ </target>
+
+ <target name="resource">
+  <copy todir="${classes}">
+   <fileset dir="${src}">
+    <patternset refid="resources" />
+   </fileset>
+  </copy>
+ </target>
+
+ <target name="clean">
+  <delete dir="${classes}" />
+  <delete dir="${dist}" />
+ </target>
+
+ <target name="compile" depends="init">
+  <javac classpathref="classpath" debug="true" deprecation="false" destdir="${classes}" nowarn="false" encoding="${charset}">
+   <src path="${src}" />
+  </javac>
+ </target>
+
+ <target name="jar" depends="resource, compile, init">
+  <jar compress="false" destfile="${dist}/${app-name}.jar">
+   <fileset dir="${classes}">
+    <include name="**/*.class" />
+    <patternset refid="resources" />
+   </fileset>
+  </jar>
+ </target>
+
+ <target name="rejar" depends="clean, jar" />
+
+ <target name="ear" depends="war">
+  <ear destfile="${dist}/${app-name}-${release-version}.ear" appxml="META-INF/application-j1.3.xml">
+   <fileset dir="${dist}" includes="${app-name}-${release-version}.war" />
+  </ear>
+ </target>
+
+ <target name="release" depends="war">
+  <zip destfile="${dist}/${app-name}-${release-version}.zip">
+   <zipfileset dir="${dist}" includes="${app-name}-${release-version}.war" prefix="." />
+   <zipfileset dir="db" includes="*.*" prefix="db" />
+   <zipfileset dir="doc" includes="*.*" prefix="doc" />
+  </zip>
+ </target>
+
+ <target name="javadoc">
+  <javadoc encoding="${charset}" charset="${charset}" access="public" author="true" destdir="${dist}/javadoc" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" source="1.5" splitindex="true" use="true" version="true" packagenames="${javadoc-packagenames}" sourcepath="${src}" classpathref="classpath" />
+ </target>
+</project>
