@@ -84,7 +84,7 @@
  </target>
 
  <target name="compile" depends="init">
-  <javac classpathref="classpath" debug="true" deprecation="false" destdir="${classes}" nowarn="false" encoding="${charset}">
+  <javac classpathref="classpath" debug="true" deprecation="false" destdir="${classes}" nowarn="false" encoding="${charset}" includeantruntime="on">
    <src path="${src}" />
   </javac>
  </target>

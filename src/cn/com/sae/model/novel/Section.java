@@ -1,6 +1,8 @@
 package cn.com.sae.model.novel;
 
-public class Section {
+import java.io.Serializable;
+
+public class Section implements Serializable {
 	public String title;
 	public String text;
 }

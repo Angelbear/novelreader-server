@@ -57,18 +57,17 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	}
 
 	@Override
-	public Book getBookInfoFromSearchResult(SearchResult result) {
+	public Book getBookInfoFromSearchResult(String resultUrl) {
 		// http://www.59to.com/modules/article/articleinfo.php?id=10866 ↓
 		// http://www.59to.com/files/article/xiaoshuo/10/10866/index.html
 		try {
-			if (result != null && result.url != null) {
-				String html = this.fetchUrl.fetch(result.url);
+			if (resultUrl != null) {
+				String html = this.fetchUrl.fetch(resultUrl);
 				Document doc = Jsoup.parse(html);
 				Elements as = doc.select("a.btnlink");
 				if (as.last() != null) {
 					Element e = as.get(0);
 					Book book = new Book();
-					book.name = result.name;
 					book.url = e.attr("href");
 					return book;
 				}
@@ -80,11 +79,11 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	}
 
 	@Override
-	public List<SectionInfo> retriveBookSections(Book book) {
+	public List<SectionInfo> retriveBookSections(String bookUrl) {
 		List<SectionInfo> results = new ArrayList<SectionInfo>();
 		try {
-			if (book != null && book.url != null) {
-				String html = this.fetchUrl.fetch(book.url);
+			if (bookUrl != null) {
+				String html = this.fetchUrl.fetch(bookUrl);
 				Document doc = Jsoup.parse(html);
 				Elements resultTable = doc.getElementsByClass("acss");
 				if (resultTable.last() != null) {
@@ -97,7 +96,7 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 						result.name = Encoding.getGBKStringFromISO8859String(e
 								.text());
 						result.url = PathUtilities.resolveRelativePath(
-								e.attr("href"), book.url);
+								e.attr("href"), bookUrl);
 						results.add(result);
 					}
 				}
@@ -116,10 +115,10 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	public static final String NBSP_IN_UTF8 = "\u00a0";
 
 	@Override
-	public Section getSection(SectionInfo sec) {
+	public Section getSection(String secUrl) {
 		try {
-			if (sec != null && sec.url != null) {
-				String html = this.fetchUrl.fetch(sec.url);
+			if (secUrl != null) {
+				String html = this.fetchUrl.fetch(secUrl);
 				Document doc = Jsoup.parse(html);
 				Elements title = doc.getElementsByClass("myleft");
 				Element content = doc.getElementById("content");

@@ -15,18 +15,23 @@ import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
+import cn.com.sae.proxy.CacheInvocationHandler;
+import cn.com.sae.utils.ProxyUtils;
 
 public class NovelSearchEngine {
 	private static HashMap<String, WebSiteCrawler> crawlerImpl = new HashMap<String, WebSiteCrawler>();
 
 	public static void init() {
-		LiXiangWenXue li = new LiXiangWenXue();
-		LuoQiuZhongWen luo = new LuoQiuZhongWen();
-		WuJiuWenXue wujiu = new WuJiuWenXue();
+		WebSiteCrawler li = new LiXiangWenXue();
+		WebSiteCrawler li_proxy = (WebSiteCrawler)ProxyUtils.createProxy(WebSiteCrawler.class, new CacheInvocationHandler(li));
+		WebSiteCrawler luo = new LuoQiuZhongWen();
+		WebSiteCrawler luo_proxy = (WebSiteCrawler)ProxyUtils.createProxy(WebSiteCrawler.class, new CacheInvocationHandler(luo));
+		WebSiteCrawler wujiu = new WuJiuWenXue();
+		WebSiteCrawler wujiu_proxy = (WebSiteCrawler)ProxyUtils.createProxy(WebSiteCrawler.class, new CacheInvocationHandler(wujiu));
 		// TODO
-		crawlerImpl.put(li.crawlerName(), li);
-		crawlerImpl.put(luo.crawlerName(), luo);
-		crawlerImpl.put(wujiu.crawlerName(), wujiu);
+		crawlerImpl.put(li.crawlerName(), li_proxy);
+		crawlerImpl.put(luo.crawlerName(), luo_proxy);
+		crawlerImpl.put(wujiu.crawlerName(), wujiu_proxy);
 	}
 
 	public static List<SearchResult> searchNote(String keyWord, String from) {
@@ -52,27 +57,27 @@ public class NovelSearchEngine {
 		return results;
 	}
 
-	public static Book getBookInfoFromSearchResult(SearchResult result,
+	public static Book getBookInfoFromSearchResult(String resultUrl,
 			String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
-			return crawler.getBookInfoFromSearchResult(result);
+			return crawler.getBookInfoFromSearchResult(resultUrl);
 		}
 		return null;
 	}
 
-	public static List<SectionInfo> retriveBookSections(Book book, String from) {
+	public static List<SectionInfo> retriveBookSections(String bookUrl, String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
-			return crawler.retriveBookSections(book);
+			return crawler.retriveBookSections(bookUrl);
 		}
 		return null;
 	}
 
-	public static Section getSection(SectionInfo sec, String from) {
+	public static Section getSection(String secUrl, String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
-			return crawler.getSection(sec);
+			return crawler.getSection(secUrl);
 		}
 		return null;
 	}

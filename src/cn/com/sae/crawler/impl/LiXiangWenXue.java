@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
+import cn.com.sae.annotation.UseMemcache;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
@@ -56,17 +57,16 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 	}
 
 	@Override
-	public Book getBookInfoFromSearchResult(SearchResult result) {
+	public Book getBookInfoFromSearchResult(String resultUrl) {
 		// http://www.03wx.com/xsinfo/6/6474.htm ↓
 		// http://www.03wx.com/files/article/html/6/6474/
 		try {
-			if (result != null && result.url != null) {
-				String[] segments = result.url.split("/");
+			if (resultUrl != null) {
+				String[] segments = resultUrl.split("/");
 				String novel_id = segments[segments.length - 1].replace(".htm",
 						"");
 				String novel_type = segments[segments.length - 2];
 				Book book = new Book();
-				book.name = result.name;
 				book.url = "http://www.03wx.com/files/article/html/"
 						+ novel_type + "/" + novel_id + "/";
 				return book;
@@ -78,11 +78,11 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 	}
 
 	@Override
-	public List<SectionInfo> retriveBookSections(Book book) {
+	public List<SectionInfo> retriveBookSections(String bookUrl) {
 		List<SectionInfo> results = new ArrayList<SectionInfo>();
 		try {
-			if (book != null && book.url != null) {
-				String html = this.fetchUrl.fetch(book.url);
+			if (bookUrl != null) {
+				String html = this.fetchUrl.fetch(bookUrl);
 				Document doc = Jsoup.parse(html);
 				Elements resultTable = doc.getElementsByClass("bc001");
 				if (resultTable.last() != null) {
@@ -120,10 +120,10 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 	public static final String NBSP_IN_UTF8 = "\u00a0";
 
 	@Override
-	public Section getSection(SectionInfo sec) {
+	public Section getSection(String secUrl) {
 		try {
-			if (sec != null && sec.url != null) {
-				String html = this.fetchUrl.fetch(sec.url);
+			if (secUrl != null) {
+				String html = this.fetchUrl.fetch(secUrl);
 				Document doc = Jsoup.parse(html);
 				Elements uctxt = doc.getElementsByClass("uctxt");
 				if (uctxt.last() != null) {

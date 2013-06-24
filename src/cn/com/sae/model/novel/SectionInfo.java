@@ -1,6 +1,8 @@
 package cn.com.sae.model.novel;
 
-public class SectionInfo {
+import java.io.Serializable;
+
+public class SectionInfo implements Serializable {
 	public String name;
 	public String url;
 }

@@ -10,9 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.arnx.jsonic.JSON;
 import cn.com.sae.controller.NovelSearchEngine;
-import cn.com.sae.model.SearchResult;
-import cn.com.sae.model.novel.Book;
-import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.utils.DataValidator;
 
 public class Note extends HttpServlet {
@@ -69,11 +66,9 @@ public class Note extends HttpServlet {
 				.validateHttpParamData(params);
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			SearchResult result = new SearchResult();
-			result.url = opts.get("url");
 			response.getWriter().println(
 					JSON.encode(NovelSearchEngine.getBookInfoFromSearchResult(
-							result, opts.get("from"))));
+							opts.get("url"), opts.get("from"))));
 		} else {
 			_errorOutput(response);
 		}
@@ -91,11 +86,9 @@ public class Note extends HttpServlet {
 				.validateHttpParamData(params);
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			Book result = new Book();
-			result.url = opts.get("url");
 			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.retriveBookSections(result,
-							opts.get("from"))));
+					JSON.encode(NovelSearchEngine.retriveBookSections(
+							opts.get("url"), opts.get("from"))));
 		} else {
 			_errorOutput(response);
 		}
@@ -113,10 +106,8 @@ public class Note extends HttpServlet {
 				.validateHttpParamData(params);
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			SectionInfo result = new SectionInfo();
-			result.url = opts.get("url");
 			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.getSection(result,
+					JSON.encode(NovelSearchEngine.getSection(opts.get("url"),
 							opts.get("from"))));
 		} else {
 			_errorOutput(response);

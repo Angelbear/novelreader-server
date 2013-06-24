@@ -1,6 +1,8 @@
 package cn.com.sae.model;
 
-public class SearchResult {
+import java.io.Serializable;
+
+public class SearchResult implements Serializable {
 	public String name;
 	public String url;
 	public String from;
