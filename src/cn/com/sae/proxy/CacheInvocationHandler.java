@@ -38,8 +38,13 @@ public class CacheInvocationHandler implements InvocationHandler {
 			sb.append(params[i]);
 		}
 		String key = sb.toString();
-		CachableObject cached = (CachableObject) SaeKVUtil.deserializable(saeKV
-				.get(key));
+		CachableObject cached = null;
+		try {
+			cached = (CachableObject) SaeKVUtil.deserializable(saeKV.get(key));
+		} catch (Exception e) {
+			saeKV.delete(key);
+			return null;
+		}
 		if (cached != null) {
 			if (cached.version != Common.CACHE_OBJECT_VERSION
 					|| cached.createDate < System.currentTimeMillis()
@@ -83,7 +88,13 @@ public class CacheInvocationHandler implements InvocationHandler {
 			sb.append(params[i]);
 		}
 		String key = sb.toString();
-		CachableObject cached = (CachableObject) mc.get(key);
+		CachableObject cached = null;
+		try {
+			cached = (CachableObject) mc.get(key);
+		} catch (Exception e) {
+			mc.delete(key);
+			return null;
+		}
 		if (cached != null) {
 			if (cached.version != Common.CACHE_OBJECT_VERSION) {
 				mc.delete(key);
