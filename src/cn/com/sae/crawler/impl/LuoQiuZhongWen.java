@@ -59,6 +59,10 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 		// http://www.luoqiu.com/html/74/74568/index.html
 		try {
 			if (resultUrl != null) {
+				String html = this.fetchUrl.fetch(resultUrl);
+				Document doc = Jsoup.parse(html);
+				Elements title = doc.select("div.booktitle h1");
+				
 				String[] segments = resultUrl.split("/");
 				String novel_id = segments[segments.length - 1].replace(
 						".html", "");
@@ -66,6 +70,9 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 				Book book = new Book();
 				book.url = "http://www.luoqiu.com/html/" + novel_type + "/"
 						+ novel_id + "/index.html";
+				if (title.last() != null) {
+					book.name = title.last().text();
+				}
 				return book;
 			}
 		} catch (Exception e) {

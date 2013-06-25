@@ -70,6 +70,13 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 				String html = this.fetchUrl.fetch(resultUrl);
 				Document doc = Jsoup.parse(html);
 				Elements as = doc.select("a.btnlink");
+				Element content = doc.getElementById("content");
+				Elements title = content
+						.select("table tbody tr td table tbody tr td table tbody tr td span");
+				//*[@id="content"]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/br[3]
+				Elements description = content
+						.select("table tbody tr td table tbody tr td p");
+				//*[@id="content"]/table/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[1]/span
 				if (as.last() != null) {
 					Element e = as.get(0);
 					Book book = new Book();
