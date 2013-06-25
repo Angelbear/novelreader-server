@@ -1,8 +1,9 @@
 package cn.com.sae.model.novel;
 
-import java.io.Serializable;
+import cn.com.sae.model.CachableObject;
 
-public class SectionInfo implements Serializable {
+public class SectionInfo extends CachableObject{
+	private static final long serialVersionUID = 926160435482016042L;
 	public String name;
 	public String url;
 }

@@ -1,9 +1,10 @@
 package cn.com.sae.model;
 
-import java.io.Serializable;
 
-public class SearchResult implements Serializable {
+public class SearchResult extends CachableObject {
+	private static final long serialVersionUID = 7863841596852926857L;
 	public String name;
 	public String url;
+	public String author;
 	public String from;
 }

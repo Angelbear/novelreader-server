@@ -45,6 +45,11 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 								.text());
 						result.url = d.getElementsByTag("a").get(0)
 								.attr("href");
+						if (td.hasNext()) {
+							result.author = Encoding
+									.getGBKStringFromISO8859String(td.next()
+											.text());
+						}
 						result.from = this.crawlerName();
 						results.add(result);
 					}

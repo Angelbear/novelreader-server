@@ -41,6 +41,7 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 						SearchResult result = new SearchResult();
 						result.name = d.text();
 						result.url = d.attr("href");
+						result.author = d.parent().nextElementSibling().text();
 						result.from = this.crawlerName();
 						results.add(result);
 					}

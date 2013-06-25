@@ -45,6 +45,11 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 								.text());
 						result.url = d.getElementsByTag("a").get(0)
 								.attr("href");
+						if (td.hasNext()) {
+							result.author = Encoding
+									.getGBKStringFromISO8859String(td.next()
+											.text());
+						}
 						result.from = this.crawlerName();
 						results.add(result);
 					}
@@ -62,17 +67,33 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		// http://www.03wx.com/files/article/html/6/6474/
 		try {
 			if (resultUrl != null) {
+				String html = this.fetchUrl.fetch(resultUrl);
+				Document doc = Jsoup.parse(html);
+				Elements title = doc.select("h1.booktitle");
+				Elements img = doc
+						.select("#content > table:eq(1) > tbody > tr:eq(5)  > td > table > tbody > tr:eq(1) > td > table > tbody > tr >  td > table > tbody > tr > td > a > img");
+				Elements description = doc
+						.select("#content > table:eq(1) > tbody > tr:eq(5) > td > table > tbody > tr:eq(4) > td > p");
+
 				String[] segments = resultUrl.split("/");
 				String novel_id = segments[segments.length - 1].replace(".htm",
 						"");
 				String novel_type = segments[segments.length - 2];
 				Book book = new Book();
+				book.name = Encoding.getGBKStringFromISO8859String(title.last()
+						.text());
+				System.out.println(book.name);
 				book.url = "http://www.03wx.com/files/article/html/"
 						+ novel_type + "/" + novel_id + "/";
+				book.img = img.last().attr("src");
+				book.description = Encoding
+						.getGBKStringFromISO8859String(description.text()
+								.replace(NBSP_IN_UTF8, ""));
+				System.out.println(book.name + " " + book.img);
 				return book;
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		return null;
 	}
