@@ -19,5 +19,28 @@
 		<servlet-name>Note</servlet-name>
 		<url-pattern>/note/*</url-pattern>
 	</servlet-mapping>
+	
+	
+	<servlet>
+		<servlet-name>Rank</servlet-name>
+		<servlet-class>cn.com.sae.Rank</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
+	<servlet-mapping>
+		<servlet-name>Rank</servlet-name>
+		<url-pattern>/rank/*</url-pattern>
+	</servlet-mapping>
+
+
+	<servlet>
+		<servlet-name>Category</servlet-name>
+		<servlet-class>cn.com.sae.Category</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>Category</servlet-name>
+		<url-pattern>/category/*</url-pattern>
+	</servlet-mapping>
 </web-app>

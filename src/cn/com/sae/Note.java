@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,7 +11,7 @@ import net.arnx.jsonic.JSON;
 import cn.com.sae.controller.NovelSearchEngine;
 import cn.com.sae.utils.DataValidator;
 
-public class Note extends HttpServlet {
+public class Note extends BaseHttpServlet {
 
 	private static final long serialVersionUID = 2056174360882626087L;
 
@@ -21,18 +20,6 @@ public class Note extends HttpServlet {
 
 	public void init() {
 		NovelSearchEngine.init(this.getServletConfig());
-	}
-
-	private void _errorOutput(HttpServletResponse response)
-			throws ServletException, IOException {
-		response.setContentType("text/html");
-		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		response.getWriter().println("Invalid Usage");
-	}
-
-	private void _writeOKHTMLHeader(HttpServletResponse response) {
-		response.setContentType("application/json;charset=utf-8");
-		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
 	private static String[][] searchNoteRules = {

@@ -176,6 +176,17 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		return null;
 	}
 
+	public List<SearchResult> getRank(int pageNo) {
+		List<SearchResult> results = new ArrayList<SearchResult>();
+		if (pageNo <= 0)
+			return results;
+		String rankUrl = "http://www.03wx.com/xstopallvisit/0/" + ".htm";
+		String html = this.fetchUrl.fetch(rankUrl);
+		Document doc = Jsoup.parse(html);
+		//*[@id="content"]/table/tbody/tr[2]
+		return results;
+	}
+
 	@Override
 	public String crawlerName() {
 		return "lixiangwenxue";
