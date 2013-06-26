@@ -29,8 +29,8 @@ public class CacheInvocationHandler implements InvocationHandler {
 		this.proxied = proxied;
 	}
 
-	private Object getSearchResultFromSaeKV(String func, Object... params)
-			throws IOException, ClassNotFoundException {
+	private Object getSearchResultFromSaeKV(Method method, String func,
+			Object... params) throws IOException, ClassNotFoundException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(func);
 		for (int i = 0; i < params.length; i++) {
@@ -46,9 +46,10 @@ public class CacheInvocationHandler implements InvocationHandler {
 			return null;
 		}
 		if (cached != null) {
+			UseSaeKV m = method.getAnnotation(UseSaeKV.class);
 			if (cached.version != Common.CACHE_OBJECT_VERSION
 					|| cached.createDate < System.currentTimeMillis()
-							- Common.SAE_KV_STORAGE_EXPIRATION) {
+							- m.expiry()) {
 				saeKV.delete(key);
 			} else {
 				if (cached.object != null) {
@@ -128,9 +129,10 @@ public class CacheInvocationHandler implements InvocationHandler {
 		return mc.add(key, cache, expiry);
 	}
 
-	private boolean putSearchResultToMemcached(Object result, String func,
-			Object... params) {
-		return putSearchResultToMemcached(result, 30, func, params);
+	private boolean putSearchResultToMemcached(Method method, Object result,
+			String func, Object... params) {
+		UseMemcache mc = method.getAnnotation(UseMemcache.class);
+		return putSearchResultToMemcached(result, mc.expiry(), func, params);
 	}
 
 	private void checkIsInit() {
@@ -153,9 +155,9 @@ public class CacheInvocationHandler implements InvocationHandler {
 		}
 
 		if (doesCacheInSaeKV(method)) {
-			Object cached = getSearchResultFromSaeKV(func, args);
+			Object cached = getSearchResultFromSaeKV(method, func, args);
 			if (cached != null) {
-				putSearchResultToMemcached(cached, func, args);
+				putSearchResultToMemcached(method, cached, func, args);
 				return cached;
 			}
 		}
@@ -163,7 +165,7 @@ public class CacheInvocationHandler implements InvocationHandler {
 		Object result = method.invoke(proxied, args);
 
 		if (doesCacheInMemcached(method)) {
-			putSearchResultToMemcached(result, func, args);
+			putSearchResultToMemcached(method, result, func, args);
 		}
 		if (doesCacheInSaeKV(method)) {
 			putSearchResultToSaeKV(result, func, args);

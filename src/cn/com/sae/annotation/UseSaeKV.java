@@ -5,7 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import cn.com.sae.utils.Common;
+
 @Target(value = ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UseSaeKV {
+	int expiry() default Common.SAE_KV_STORAGE_EXPIRATION;
 }

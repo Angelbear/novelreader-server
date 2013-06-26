@@ -5,8 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(value=ElementType.METHOD)
+import cn.com.sae.utils.Common;
+
+@Target(value = ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UseMemcache {
-
+	int expiry() default Common.MEMCACHED_STORAGE_EXPIRATION;
 }
