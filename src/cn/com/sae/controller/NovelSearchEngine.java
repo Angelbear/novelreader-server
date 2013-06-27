@@ -96,4 +96,12 @@ public class NovelSearchEngine {
 		}
 		return null;
 	}
+	
+	public static List<SearchResult> getRank(int pageNo, String from){
+		WebSiteCrawler crawler = crawlerImpl.get(from);
+		if (crawler != null) {
+			return crawler.getRank(pageNo);
+		}
+		return null;
+	}
 }

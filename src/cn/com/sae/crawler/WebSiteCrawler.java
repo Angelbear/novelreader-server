@@ -26,6 +26,10 @@ public interface WebSiteCrawler {
 	@UseMemcache(expiry = Common.MINITE)
 	@UseSaeKV(expiry = Common.WEEK)
 	public Section getSection(String secUrl);
+	
+	@UseMemcache(expiry = Common.HOUR)
+	@UseSaeKV(expiry = Common.DAY)
+	public List<SearchResult> getRank(int pageNo);
 
 	public String crawlerName();
 }

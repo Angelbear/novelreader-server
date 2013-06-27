@@ -141,6 +141,10 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 		}
 		return null;
 	}
+	
+	public List<SearchResult> getRank(int pageNo) {
+		return null;
+	}
 
 	@Override
 	public String crawlerName() {

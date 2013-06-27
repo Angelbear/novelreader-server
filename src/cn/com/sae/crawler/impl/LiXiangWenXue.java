@@ -13,11 +13,13 @@ import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
 import cn.com.sae.annotation.UseMemcache;
+import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
+import cn.com.sae.utils.Common;
 import cn.com.sae.utils.Encoding;
 
 public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
@@ -176,14 +178,33 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		return null;
 	}
 
+	
 	public List<SearchResult> getRank(int pageNo) {
 		List<SearchResult> results = new ArrayList<SearchResult>();
 		if (pageNo <= 0)
 			return results;
-		String rankUrl = "http://www.03wx.com/xstopallvisit/0/" + ".htm";
+		String rankUrl = "http://www.03wx.com/xstopallvisit/0/" + pageNo
+				+ ".htm";
 		String html = this.fetchUrl.fetch(rankUrl);
 		Document doc = Jsoup.parse(html);
-		//*[@id="content"]/table/tbody/tr[2]
+		Element content = doc.getElementById("content");
+		if (content != null) {
+			Elements trs = content.select("table tbody tr");
+			Iterator<Element> itr = trs.iterator();
+			while (itr.hasNext()) {
+				Element e = itr.next();
+				if (e.select("td.odd").size() > 0) {
+					SearchResult r = new SearchResult();
+					r.name = Encoding
+							.getGBKStringFromISO8859String(e.select("td.odd").get(0).text());
+					r.url = e.select("td.odd a").get(0).attr("href");
+					r.author = Encoding
+							.getGBKStringFromISO8859String(e.select("td.odd").get(1).text());
+					r.from = this.crawlerName();
+					results.add(r);
+				}
+			}
+		}
 		return results;
 	}
 
