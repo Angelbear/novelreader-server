@@ -62,7 +62,7 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 				String html = this.fetchUrl.fetch(resultUrl);
 				Document doc = Jsoup.parse(html);
 				Elements title = doc.select("div.booktitle h1");
-				
+				Elements img = doc.select("div.bookcover a img");
 				String[] segments = resultUrl.split("/");
 				String novel_id = segments[segments.length - 1].replace(
 						".html", "");
@@ -72,6 +72,9 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 						+ novel_id + "/index.html";
 				if (title.last() != null) {
 					book.name = title.last().text();
+				}
+				if (img.last() != null) {
+					book.img = img.last().attr("src");
 				}
 				return book;
 			}

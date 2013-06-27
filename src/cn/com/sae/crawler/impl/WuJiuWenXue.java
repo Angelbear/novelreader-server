@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import cn.com.sae.crawler.WebSiteCrawler;
@@ -73,14 +74,32 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 				Element content = doc.getElementById("content");
 				Elements title = content
 						.select("table tbody tr td table tbody tr td table tbody tr td span");
-				//*[@id="content"]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/br[3]
+				// *[@id="content"]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/br[3]
+				Elements img = content
+						.select("table tbody tr td table tbody tr td a img");
 				Elements description = content
-						.select("table tbody tr td table tbody tr td p");
-				//*[@id="content"]/table/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[1]/span
+						.select("table tbody tr td table tbody tr td span.hottext");
+				// *[@id="content"]/table/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[1]/span
+				// *[@id="content"]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/a[1]/img
+				// *[@id="content"]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/span[2]
 				if (as.last() != null) {
 					Element e = as.get(0);
 					Book book = new Book();
 					book.url = e.attr("href");
+					if (title.last() != null) {
+						book.name = Encoding
+								.getGBKStringFromISO8859String(title.last()
+										.text());
+					}
+					if (img.last() != null) {
+						book.img = img.last().attr("src");
+					}
+					if (description.last() != null) {
+						book.description = Encoding
+								.getGBKStringFromISO8859String(description
+										.last().parent().text()
+										.replace(NBSP_IN_UTF8, ""));
+					}
 					return book;
 				}
 			}
