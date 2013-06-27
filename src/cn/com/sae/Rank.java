@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.arnx.jsonic.JSON;
 import cn.com.sae.controller.NovelSearchEngine;
-import cn.com.sae.crawler.impl.LiXiangWenXue;
 import cn.com.sae.utils.DataValidator;
 
 public class Rank extends BaseHttpServlet {

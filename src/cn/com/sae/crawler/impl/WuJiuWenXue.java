@@ -10,12 +10,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
-import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
+import cn.com.sae.annotation.UseMemcache;
+import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.CategoryInfo;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.utils.Encoding;
@@ -179,5 +181,17 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	@Override
 	public String crawlerName() {
 		return "wujiuwenxue";
+	}
+
+	@Override
+	public List<CategoryInfo> getCategoryInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SearchResult> getCategory(int type, int pageNo) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

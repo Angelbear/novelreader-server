@@ -32,7 +32,6 @@
 		<url-pattern>/rank/*</url-pattern>
 	</servlet-mapping>
 
-<!-- 
 	<servlet>
 		<servlet-name>Category</servlet-name>
 		<servlet-class>cn.com.sae.Category</servlet-class>
@@ -43,5 +42,5 @@
 		<servlet-name>Category</servlet-name>
 		<url-pattern>/category/*</url-pattern>
 	</servlet-mapping>
- -->
+ 
 </web-app>

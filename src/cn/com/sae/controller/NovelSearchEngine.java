@@ -10,11 +10,9 @@ import java.util.Map.Entry;
 import javax.servlet.ServletConfig;
 
 import cn.com.sae.crawler.WebSiteCrawler;
-import cn.com.sae.crawler.impl.LiXiangWenXue;
-import cn.com.sae.crawler.impl.LuoQiuZhongWen;
-import cn.com.sae.crawler.impl.WuJiuWenXue;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.CategoryInfo;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.proxy.CacheInvocationHandler;
@@ -101,6 +99,22 @@ public class NovelSearchEngine {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
 			return crawler.getRank(pageNo);
+		}
+		return null;
+	}
+	
+	public static List<SearchResult> getCategory(int type, int pageNo, String from){
+		WebSiteCrawler crawler = crawlerImpl.get(from);
+		if (crawler != null) {
+			return crawler.getCategory(type, pageNo);
+		}
+		return null;
+	}
+	
+	public static List<CategoryInfo> getCategoryInfo(String from) {
+		WebSiteCrawler crawler = crawlerImpl.get(from);
+		if (crawler != null) {
+			return crawler.getCategoryInfo();
 		}
 		return null;
 	}

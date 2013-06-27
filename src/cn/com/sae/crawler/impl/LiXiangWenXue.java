@@ -12,14 +12,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
-import cn.com.sae.annotation.UseMemcache;
-import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.CategoryInfo;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
-import cn.com.sae.utils.Common;
 import cn.com.sae.utils.Encoding;
 
 public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
@@ -178,14 +176,9 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		return null;
 	}
 
-	
-	public List<SearchResult> getRank(int pageNo) {
+	private List<SearchResult> getSearchResultsFromURL(String url) {
 		List<SearchResult> results = new ArrayList<SearchResult>();
-		if (pageNo <= 0)
-			return results;
-		String rankUrl = "http://www.03wx.com/xstopallvisit/0/" + pageNo
-				+ ".htm";
-		String html = this.fetchUrl.fetch(rankUrl);
+		String html = this.fetchUrl.fetch(url);
 		Document doc = Jsoup.parse(html);
 		Element content = doc.getElementById("content");
 		if (content != null) {
@@ -195,17 +188,61 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 				Element e = itr.next();
 				if (e.select("td.odd").size() > 0) {
 					SearchResult r = new SearchResult();
-					r.name = Encoding
-							.getGBKStringFromISO8859String(e.select("td.odd").get(0).text());
+					r.name = Encoding.getGBKStringFromISO8859String(e
+							.select("td.odd").get(0).text());
 					r.url = e.select("td.odd a").get(0).attr("href");
-					r.author = Encoding
-							.getGBKStringFromISO8859String(e.select("td.odd").get(1).text());
+					r.author = Encoding.getGBKStringFromISO8859String(e
+							.select("td.odd").get(1).text());
 					r.from = this.crawlerName();
 					results.add(r);
 				}
 			}
 		}
 		return results;
+	}
+
+	public List<SearchResult> getRank(int pageNo) {
+		List<SearchResult> results = new ArrayList<SearchResult>();
+		if (pageNo <= 0)
+			return results;
+		String rankUrl = "http://www.03wx.com/xstopallvisit/0/" + pageNo
+				+ ".htm";
+		return this.getSearchResultsFromURL(rankUrl);
+	}
+
+	private String[] types = { "玄幻魔法", "武侠修真", "都市言情", "历史军事", "侦探推理", "网游动漫",
+			"科幻小说", "恐怖灵异", "散文诗词", "其他类型", "全本" };
+
+	public List<CategoryInfo> getCategoryInfo() {
+		List<CategoryInfo> infos = new ArrayList<CategoryInfo>();
+		for (int i = 0; i < types.length; i++) {
+			CategoryInfo cat = new CategoryInfo();
+			cat.name = types[i];
+			cat.type = i + 1;
+			infos.add(cat);
+		}
+		return infos;
+	}
+
+	public List<SearchResult> getCategory(int categoryType, int pageNo) {
+		List<SearchResult> results = new ArrayList<SearchResult>();
+		if (pageNo <= 0) {
+			return results;
+		}
+
+		if (categoryType < 1 || categoryType > 11) {
+			return results;
+		}
+
+		String categoryUrl;
+		if (categoryType < 11) {
+			categoryUrl = "http://www.03wx.com/xssort" + categoryType + "/0/"
+					+ pageNo + ".htm";
+		} else {
+			categoryUrl = "http://www.03wx.com/modules/article/articlelist.php?fullflag=1&page="
+					+ pageNo;
+		}
+		return this.getSearchResultsFromURL(categoryUrl);
 	}
 
 	@Override

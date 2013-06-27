@@ -6,6 +6,7 @@ import cn.com.sae.annotation.UseMemcache;
 import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.CategoryInfo;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.utils.Common;
@@ -30,6 +31,12 @@ public interface WebSiteCrawler {
 	@UseMemcache(expiry = Common.HOUR)
 	@UseSaeKV(expiry = Common.DAY)
 	public List<SearchResult> getRank(int pageNo);
+	
+	public List<CategoryInfo> getCategoryInfo();
+	
+	@UseMemcache(expiry = Common.HOUR)
+	@UseSaeKV(expiry = Common.DAY)
+	public List<SearchResult> getCategory(int type, int pageNo);
 
 	public String crawlerName();
 }

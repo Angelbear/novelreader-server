@@ -1,6 +1,5 @@
 package cn.com.sae.model;
 
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import cn.com.sae.utils.Common;
