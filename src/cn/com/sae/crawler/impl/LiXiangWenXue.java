@@ -151,7 +151,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		try {
 			if (secUrl != null) {
 				String html = this.fetchUrl.fetch(secUrl);
-				Document doc = Jsoup.parse(html);
+				Document doc = Jsoup.parse(cleanPreserveLineBreaks(html));
 				Elements uctxt = doc.getElementsByClass("uctxt");
 				if (uctxt.last() != null) {
 					Element title = uctxt.get(0).getElementsByClass("title")
@@ -166,7 +166,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 					secText.outputSettings().escapeMode(EscapeMode.xhtml);
 					section.text = Encoding
 							.getGBKStringFromISO8859String(secText.text()
-									.replace(NBSP_IN_UTF8, ""));
+									.replace(NBSP_IN_UTF8, " ").replace("br2n", "\n"));
 					return section;
 				}
 			}

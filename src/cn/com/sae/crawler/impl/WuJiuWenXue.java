@@ -152,7 +152,7 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 		try {
 			if (secUrl != null) {
 				String html = this.fetchUrl.fetch(secUrl);
-				Document doc = Jsoup.parse(html);
+				Document doc = Jsoup.parse(cleanPreserveLineBreaks(html));
 				Elements title = doc.getElementsByClass("myleft");
 				Element content = doc.getElementById("content");
 				if (title.last() != null && content != null) {
@@ -164,7 +164,8 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 					secText.outputSettings().escapeMode(EscapeMode.xhtml);
 					section.text = Encoding
 							.getGBKStringFromISO8859String(secText.text()
-									.replace(NBSP_IN_UTF8, ""));
+									.replace(NBSP_IN_UTF8, " ")
+									.replace("br2n", "\n"));
 					return section;
 				}
 			}
@@ -177,7 +178,7 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	public List<SearchResult> getRank(int pageNo) {
 		return null;
 	}
-	
+
 	@Override
 	public String crawlerName() {
 		return "wujiuwenxue";

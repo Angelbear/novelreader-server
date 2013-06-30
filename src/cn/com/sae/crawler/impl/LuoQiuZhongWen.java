@@ -126,7 +126,7 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 		try {
 			if (secUrl != null) {
 				String html = this.fetchUrl.fetch(secUrl);
-				Document doc = Jsoup.parse(html);
+				Document doc = Jsoup.parse(cleanPreserveLineBreaks(html));
 				Elements title = doc.getElementsByClass("bname_content");
 				Element content = doc.getElementById("content");
 				if (title.last() != null && content != null) {
@@ -135,7 +135,7 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 					Document secText = Jsoup.parseBodyFragment(content.text());
 					secText.outputSettings().prettyPrint(false);
 					secText.outputSettings().escapeMode(EscapeMode.xhtml);
-					section.text = secText.text().replace(NBSP_IN_UTF8, "");
+					section.text = secText.text().replace(NBSP_IN_UTF8, " ").replace("br2n", "\n");
 					return section;
 				}
 			}
