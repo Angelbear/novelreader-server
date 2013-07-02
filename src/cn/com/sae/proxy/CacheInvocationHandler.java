@@ -53,7 +53,12 @@ public class CacheInvocationHandler implements InvocationHandler {
 				saeKV.delete(key);
 			} else {
 				if (cached.object != null) {
-					return cached.object;
+					if (cached.object instanceof CachableObject) {
+						return cached.object;
+					} else {
+						saeKV.delete(key);
+						return null;
+					}
 				} else {
 					return cached;
 				}
@@ -101,7 +106,12 @@ public class CacheInvocationHandler implements InvocationHandler {
 				mc.delete(key);
 			} else {
 				if (cached.object != null) {
-					return cached.object;
+					if (cached.object instanceof CachableObject) {
+						return cached.object;
+					} else {
+						mc.delete(key);
+						return null;
+					}
 				} else {
 					return cached;
 				}
