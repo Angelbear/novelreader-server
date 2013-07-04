@@ -154,19 +154,19 @@ public class CacheInvocationHandler implements InvocationHandler {
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
 		String func = proxied.getClass().getName() + "-" + method.getName();
-
+		Class returnClass = method.getReturnType();
 		checkIsInit();
 
 		if (doesCacheInMemcached(method)) {
 			Object cached = getSearchResultFromMemcached(func, args);
-			if (cached != null) {
+			if (cached != null && cached.getClass().equals(returnClass)) {
 				return cached;
 			}
 		}
 
 		if (doesCacheInSaeKV(method)) {
 			Object cached = getSearchResultFromSaeKV(method, func, args);
-			if (cached != null) {
+			if (cached != null && cached.getClass().equals(returnClass)) {
 				putSearchResultToMemcached(method, cached, func, args);
 				return cached;
 			}
