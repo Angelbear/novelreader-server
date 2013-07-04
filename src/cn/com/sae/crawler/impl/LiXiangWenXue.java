@@ -106,13 +106,12 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 				Document doc = Jsoup.parse(html);
 				Elements resultTable = doc.getElementsByClass("acss");
 				if (resultTable.last() != null) {
-					Elements trs = resultTable.get(0).getElementsByTag("tr");
-					Iterator<Element> tr = trs.listIterator();
-					while (tr.hasNext()) {
-						Elements tds = tr.next().getElementsByClass("ccss");
-						Iterator<Element> td = tds.listIterator();
-						while (td.hasNext()) {
-							Element d = td.next();
+					Elements td = resultTable.get(0).select("tbody tr td.ccss");
+					Iterator<Element> tds = td.iterator();
+					while (tds.hasNext()) {
+						Element d = tds.next();
+						if (d.getElementsByTag("a") != null
+								&& d.getElementsByTag("a").size() > 0) {
 							SectionInfo result = new SectionInfo();
 							result.name = Encoding
 									.getGBKStringFromISO8859String(d
@@ -128,7 +127,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		return results;
 	}
