@@ -1,5 +1,6 @@
 package cn.com.sae.crawler.impl;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -7,11 +8,8 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
-import cn.com.sae.annotation.UseMemcache;
-import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
@@ -105,6 +103,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 				String html = this.fetchUrl.fetch(bookUrl);
 				Document doc = Jsoup.parse(html);
 				Elements resultTable = doc.getElementsByClass("acss");
+				String lastUrl = "";
 				if (resultTable.last() != null) {
 					Elements td = resultTable.get(0).select("tbody tr td.ccss");
 					Iterator<Element> tds = td.iterator();
@@ -119,6 +118,18 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 											.text());
 							result.url = d.getElementsByTag("a").get(0)
 									.attr("href");
+							if (result.url.equals(lastUrl)) {
+								String idStr = lastUrl.substring(
+										lastUrl.lastIndexOf('/') + 1).replace(
+										".html", "");
+								int id = Integer.parseInt(idStr);
+								id += 1;
+								result.url = lastUrl.replace(
+										lastUrl.substring(lastUrl
+												.lastIndexOf('/') + 1), "" + id
+												+ ".html");
+							}
+							lastUrl = result.url;
 							results.add(result);
 						}
 

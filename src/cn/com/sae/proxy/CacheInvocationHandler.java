@@ -174,13 +174,15 @@ public class CacheInvocationHandler implements InvocationHandler {
 
 		Object result = method.invoke(proxied, args);
 
-		if (doesCacheInMemcached(method)) {
-			putSearchResultToMemcached(method, result, func, args);
+		if (result != null) {
+			if (doesCacheInMemcached(method)) {
+				putSearchResultToMemcached(method, result, func, args);
+			}
+			if (doesCacheInSaeKV(method)) {
+				putSearchResultToSaeKV(result, func, args);
+			}
 		}
-		if (doesCacheInSaeKV(method)) {
-			putSearchResultToSaeKV(result, func, args);
-		}
-
+		
 		return result;
 	}
 
