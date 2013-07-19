@@ -42,5 +42,17 @@
 		<servlet-name>Category</servlet-name>
 		<url-pattern>/category/*</url-pattern>
 	</servlet-mapping>
+	
+	
+	<servlet>
+		<servlet-name>Portal</servlet-name>
+		<servlet-class>cn.com.sae.Portal</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+	    <servlet-name>Portal</servlet-name>
+	    <url-pattern>/</url-pattern>
+	</servlet-mapping>    
  
 </web-app>
