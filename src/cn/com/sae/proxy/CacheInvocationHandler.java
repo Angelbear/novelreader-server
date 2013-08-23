@@ -53,12 +53,7 @@ public class CacheInvocationHandler implements InvocationHandler {
 				saeKV.delete(key);
 			} else {
 				if (cached.object != null) {
-					if (cached.object instanceof CachableObject) {
-						return cached.object;
-					} else {
-						saeKV.delete(key);
-						return null;
-					}
+					return cached.object;
 				} else {
 					return cached;
 				}
@@ -102,16 +97,11 @@ public class CacheInvocationHandler implements InvocationHandler {
 			return null;
 		}
 		if (cached != null) {
-			if (cached.version != Common.CACHE_OBJECT_VERSION) {
+			if (cached.version != Common.CACHE_OBJECT_VERSION) {	
 				mc.delete(key);
 			} else {
 				if (cached.object != null) {
-					if (cached.object instanceof CachableObject) {
-						return cached.object;
-					} else {
-						mc.delete(key);
-						return null;
-					}
+					return cached.object;
 				} else {
 					return cached;
 				}
@@ -154,7 +144,7 @@ public class CacheInvocationHandler implements InvocationHandler {
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
 		String func = proxied.getClass().getName() + "-" + method.getName();
-		Class returnClass = method.getReturnType();
+		Class<?> returnClass = method.getReturnType();
 		checkIsInit();
 
 		if (doesCacheInMemcached(method)) {

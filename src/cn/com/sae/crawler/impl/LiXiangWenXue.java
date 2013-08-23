@@ -1,6 +1,5 @@
 package cn.com.sae.crawler.impl;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

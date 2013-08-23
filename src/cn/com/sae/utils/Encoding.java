@@ -2,8 +2,6 @@ package cn.com.sae.utils;
 
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang.CharSet;
-
 public class Encoding {
 
 	public static void printHexString(byte[] b) {

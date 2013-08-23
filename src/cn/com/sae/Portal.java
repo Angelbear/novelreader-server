@@ -7,6 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class Portal extends BaseHttpServlet {
+
+	private static final long serialVersionUID = -2747596017528957511L;
+
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		response.sendRedirect("http://xiaoshuoyuedu-ipa.stor.sinaapp.com/index.html");

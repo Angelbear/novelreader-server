@@ -7,7 +7,7 @@ public class ProxyUtils {
 	private ProxyUtils() {
 	}
 
-	public static Object createProxy(Class proxyClass,
+	public static Object createProxy(Class<?> proxyClass,
 			InvocationHandler invocationHandler) {
 		return Proxy.newProxyInstance(proxyClass.getClassLoader(),
 				new Class[] { proxyClass }, invocationHandler);

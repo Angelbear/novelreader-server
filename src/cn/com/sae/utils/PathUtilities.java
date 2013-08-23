@@ -65,7 +65,7 @@ package cn.com.sae.utils;
  * @author Anthony Eden
  */
 public final class PathUtilities {
-	private static final String WILDCARD = "*";
+	//private static final String WILDCARD = "*";
 
 	/**
 	 * resolve a relative URL string against an absolute URL string.
