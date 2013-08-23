@@ -1,0 +1,9 @@
+*.class
+
+# Package Files #
+*.war
+*.ear
+*.log
+kvdb
+classes
+dist
