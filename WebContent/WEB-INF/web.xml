@@ -53,6 +53,18 @@
 	<servlet-mapping>
 	    <servlet-name>Portal</servlet-name>
 	    <url-pattern>/</url-pattern>
+	</servlet-mapping> 
+	
+	
+	<servlet>
+		<servlet-name>Batch</servlet-name>
+		<servlet-class>cn.com.sae.Batch</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+	    <servlet-name>Batch</servlet-name>
+	    <url-pattern>/batch/*</url-pattern>
 	</servlet-mapping>    
  
 </web-app>

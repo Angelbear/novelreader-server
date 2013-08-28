@@ -3,6 +3,8 @@ package cn.com.sae.crawler.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -74,19 +76,16 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 					book.name = Encoding.getGBKStringFromISO8859String(title
 							.last().child(0).text());
 				}
-				System.out.println(book.name);
 				book.url = resultUrl;
 				if (img.last() != null) {
 					book.img = img.last().child(0).attr("src");
 				}
-				System.out.println(book.img);
-
 				if (description.last() != null) {
 					book.description = Encoding
 							.getGBKStringFromISO8859String(description.last()
 									.child(4).text());
 				}
-				System.out.println(book.description);
+				book.from = this.crawlerName();
 				return book;
 			}
 		} catch (Exception e) {
@@ -149,6 +148,14 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 			if (secUrl != null) {
 				String html = this.fetchUrl.fetch(secUrl);
 				Document doc = Jsoup.parse(cleanPreserveLineBreaks(html));
+
+				Element script = doc.select("script").first();
+				Pattern p = Pattern.compile("(?is)next_page = \"(.+?)\"");
+				Matcher m = p.matcher(script.html());
+				while (m.find()) {
+					System.out.println(m.group());
+					System.out.println(m.group(1));
+				}
 				Element title = doc.getElementById("title");
 				Element text = doc.getElementById("content");
 				Section section = new Section();
@@ -239,6 +246,13 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 	@Override
 	public String crawlerName() {
 		return "lixiangwenxue";
+	}
+
+	@Override
+	public Book getBookInfoById(int bookId) {
+		String url = String.format("http://www.lixiangwenxue.com/lxwxw/%s/",
+				bookId);
+		return getBookInfoFromSearchResult(url);
 	}
 
 }

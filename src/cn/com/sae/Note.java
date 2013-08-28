@@ -1,6 +1,7 @@
 package cn.com.sae;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -9,6 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.arnx.jsonic.JSON;
 import cn.com.sae.controller.NovelSearchEngine;
+import cn.com.sae.model.SearchResult;
+import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.Section;
+import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.utils.DataValidator;
 
 public class Note extends BaseHttpServlet {
@@ -35,9 +40,11 @@ public class Note extends BaseHttpServlet {
 
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.searchNote(
-							opts.get("key_word"), opts.get("from"))));
+			List<SearchResult> result = NovelSearchEngine.searchNote(
+					opts.get("key_word"), opts.get("from"));
+			if (result != null) {
+				response.getWriter().println(JSON.encode(result));
+			}
 		} else {
 			_errorOutput(response);
 		}
@@ -56,9 +63,11 @@ public class Note extends BaseHttpServlet {
 				.validateHttpParamData(params);
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.getBookInfoFromSearchResult(
-							opts.get("url"), opts.get("from"))));
+			Book result = NovelSearchEngine.getBookInfoFromSearchResult(
+					opts.get("url"), opts.get("from"));
+			if (result != null) {
+				response.getWriter().println(JSON.encode(result));
+			}
 		} else {
 			_errorOutput(response);
 		}
@@ -76,9 +85,12 @@ public class Note extends BaseHttpServlet {
 				.validateHttpParamData(params);
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.retriveBookSections(
-							opts.get("url"), opts.get("from"))));
+			List<SectionInfo> result = NovelSearchEngine.retriveBookSections(
+					opts.get("url"), opts.get("from"));
+			if (result != null) {
+				response.getWriter().println(JSON.encode(result));
+			}
+
 		} else {
 			_errorOutput(response);
 		}
@@ -96,9 +108,11 @@ public class Note extends BaseHttpServlet {
 				.validateHttpParamData(params);
 		if (opts != null) {
 			_writeOKHTMLHeader(response);
-			response.getWriter().println(
-					JSON.encode(NovelSearchEngine.getSection(opts.get("url"),
-							opts.get("from"))));
+			Section result = NovelSearchEngine.getSection(opts.get("url"),
+					opts.get("from"));
+			if (result != null) {
+				response.getWriter().println(JSON.encode(result));
+			}
 		} else {
 			_errorOutput(response);
 		}

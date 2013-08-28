@@ -21,6 +21,10 @@ import cn.com.sae.utils.ProxyUtils;
 public class NovelSearchEngine {
 	private static HashMap<String, WebSiteCrawler> crawlerImpl = new HashMap<String, WebSiteCrawler>();
 
+	public static WebSiteCrawler getCrawlerByName(String name) {
+		return crawlerImpl.get(name);
+	}
+
 	public static void init(ServletConfig config) {
 		String crawlerClasses = config.getInitParameter("crawler.classes");
 
@@ -94,23 +98,24 @@ public class NovelSearchEngine {
 		}
 		return null;
 	}
-	
-	public static List<SearchResult> getRank(int pageNo, String from){
+
+	public static List<SearchResult> getRank(int pageNo, String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
 			return crawler.getRank(pageNo);
 		}
 		return null;
 	}
-	
-	public static List<SearchResult> getCategory(int type, int pageNo, String from){
+
+	public static List<SearchResult> getCategory(int type, int pageNo,
+			String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {
 			return crawler.getCategory(type, pageNo);
 		}
 		return null;
 	}
-	
+
 	public static List<CategoryInfo> getCategoryInfo(String from) {
 		WebSiteCrawler crawler = crawlerImpl.get(from);
 		if (crawler != null) {

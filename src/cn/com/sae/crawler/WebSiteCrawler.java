@@ -19,6 +19,10 @@ public interface WebSiteCrawler {
 	@UseMemcache(expiry = Common.MINITE)
 	@UseSaeKV(expiry = Common.HOUR)
 	public Book getBookInfoFromSearchResult(String resultUrl);
+	
+	@UseMemcache(expiry = Common.HOUR)
+	@UseSaeKV(expiry = Common.DAY)
+	public Book getBookInfoById(int bookId);
 
 	@UseMemcache(expiry = Common.MINITE)
 	@UseSaeKV(expiry = Common.HOUR)

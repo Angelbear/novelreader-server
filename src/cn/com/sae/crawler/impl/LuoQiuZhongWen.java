@@ -12,6 +12,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
+import cn.com.sae.annotation.UseMemcache;
+import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
@@ -77,6 +79,7 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 				if (img.last() != null) {
 					book.img = img.last().attr("src");
 				}
+				book.from = this.crawlerName();
 				return book;
 			}
 		} catch (Exception e) {
@@ -160,6 +163,14 @@ public class LuoQiuZhongWen extends BaseCrawler implements WebSiteCrawler {
 
 	@Override
 	public List<SearchResult> getCategory(int type, int pageNo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	@UseMemcache(expiry = 3600)
+	@UseSaeKV(expiry = 86400)
+	public Book getBookInfoById(int bookId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

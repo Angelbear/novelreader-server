@@ -12,6 +12,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
+import cn.com.sae.annotation.UseMemcache;
+import cn.com.sae.annotation.UseSaeKV;
 import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.model.SearchResult;
 import cn.com.sae.model.novel.Book;
@@ -248,5 +250,13 @@ public class LiXiangWenXue_old extends BaseCrawler implements WebSiteCrawler {
 	@Override
 	public String crawlerName() {
 		return "lixiangwenxue";
+	}
+
+	@Override
+	@UseMemcache(expiry = 3600)
+	@UseSaeKV(expiry = 86400)
+	public Book getBookInfoById(int bookId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -100,6 +100,7 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 										.last().parent().text()
 										.replace(NBSP_IN_UTF8, ""));
 					}
+					book.from = this.crawlerName();
 					return book;
 				}
 			}
@@ -192,5 +193,13 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	public List<SearchResult> getCategory(int type, int pageNo) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Book getBookInfoById(int bookId) {
+		String url = String.format(
+				"http://www.59to.com/modules/article/articleinfo.php?id=%d",
+				bookId);
+		return getBookInfoFromSearchResult(url);
 	}
 }
