@@ -1,5 +1,7 @@
 package cn.com.sae.db;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -17,15 +19,16 @@ public class HibernateUtil {
 					"hibernate.cfg.xml");
 			if (Common.isProduction()) {
 				if (readonly) {
-					config.setProperty("hibernate.connection.url", "jdbc:mysql://r.rdc.sae.sina.com.cn:3307/xiaoshuoyuedu");
+					config.setProperty("hibernate.connection.url", "jdbc:mysql://r.rdc.sae.sina.com.cn:3307/app_xiaoshuoyuedu");
 				} else {
-					config.setProperty("hibernate.connection.url", "jdbc:mysql://w.rdc.sae.sina.com.cn:3307/xiaoshuoyuedu");
+					config.setProperty("hibernate.connection.url", "jdbc:mysql://w.rdc.sae.sina.com.cn:3307/app_xiaoshuoyuedu");
 				}
 				config.setProperty("hibernate.connection.username", SaeUserInfo.getAccessKey());
 				config.setProperty("hibernate.connection.password", SaeUserInfo.getSecretKey());
-				
 			}
 			SessionFactory sessionFactory = config.buildSessionFactory();
+			Logger log = Logger.getLogger("org.hibernate.SQL");
+			log.setLevel(Level.ERROR);
 			return sessionFactory;
 		} catch (Throwable ex) {
 			System.err.println("Initial SessionFactory creation failed." + ex);

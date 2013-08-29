@@ -25,7 +25,7 @@ public class Book extends CachableObject {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private int id;
+	public int id;
 
 	@Column(name = "name")
 	public String name;

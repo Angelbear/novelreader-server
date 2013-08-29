@@ -5,10 +5,9 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
 
 import cn.com.sae.model.CachableObject;
 
@@ -19,27 +18,35 @@ public class Section extends CachableObject {
 
 	@Id
 	@Column(name = "id")
-	@GenericGenerator(name = "generator", strategy = "increment")
-	@GeneratedValue(generator = "generator")
-	private int id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	public int id;
 
 	@Column(name = "book_id")
-	private int book_id;
-	
+	public int book_id;
+
 	@Column(name = "name")
 	public String title;
-	
+
+	@Column(name = "source")
+	public String from;
+
 	@Column(name = "text")
 	public String text;
-	
+
 	@Column(name = "url")
 	public String url;
-	
+
 	@Column(name = "last_update_time")
 	private long last_update_time;
 
 	public long getLast_update_time() {
 		return new Date().getTime();
 	}
+
+	@Column(name = "prev_url")
+	public String prevUrl;
 	
+	@Column(name = "next_url")
+	public String nextUrl;
+
 }

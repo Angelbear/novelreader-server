@@ -7,6 +7,7 @@ public abstract class BaseCrawler {
 
 	public BaseCrawler() {
 		fetchUrl = new SaeFetchurl();
+		fetchUrl.setReadTimeout(10);
 	}
 	
 	public static String cleanPreserveLineBreaks(String bodyHtml) {

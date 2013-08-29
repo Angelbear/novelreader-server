@@ -18,6 +18,8 @@ import cn.com.sae.model.novel.CategoryInfo;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.utils.Encoding;
+import cn.com.sae.utils.Retry;
+import cn.com.sae.utils.Retry.AbstractLogic;
 
 public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 
@@ -143,30 +145,79 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 
 	public static final String NBSP_IN_UTF8 = "\u00a0";
 
-	public Section getSection(String secUrl) {
-		try {
-			if (secUrl != null) {
-				String html = this.fetchUrl.fetch(secUrl);
-				Document doc = Jsoup.parse(cleanPreserveLineBreaks(html));
-
-				Element script = doc.select("script").first();
-				Pattern p = Pattern.compile("(?is)next_page = \"(.+?)\"");
-				Matcher m = p.matcher(script.html());
-				while (m.find()) {
-					System.out.println(m.group());
-					System.out.println(m.group(1));
+	public Section getSection(final String secUrl) {
+		// 処理中で実行時例外が発生したらリトライする条件
+		Retry.Condition<Section, Exception> ifRuntimeException = new Retry.Condition<Section, Exception>() {
+			public boolean isRetry(Section result) {
+				if (result == null || result.text == null
+						|| result.text.length() == 0) {
+					return true;
 				}
-				Element title = doc.getElementById("title");
-				Element text = doc.getElementById("content");
-				Section section = new Section();
-				section.title = Encoding.getGBKStringFromISO8859String(title
-						.text());
-				section.text = Encoding.getGBKStringFromISO8859String(text
-						.text().replace(NBSP_IN_UTF8, " ")
-						.replace("br2n", "\n"));
-				return section;
-
+				return false;
 			}
+
+			public boolean isRetry(Exception error) {
+				return error instanceof RuntimeException;
+			}
+		};
+
+		try {
+			// Logicの処理を実行し、実行時例外が発生する場合は、5回までリトライする。
+			Section result = Retry.retry(3, ifRuntimeException,
+					new AbstractLogic<Section, Exception>() {
+						public Section call(int count) throws Exception {
+							String newUrl = secUrl;
+							if (count > 0) {
+								String idStr = secUrl.substring(
+										secUrl.lastIndexOf('/') + 1).replace(
+										".html", "");
+								int id = Integer.parseInt(idStr);
+								id += count;
+								newUrl = secUrl.replace(secUrl.substring(secUrl
+										.lastIndexOf('/') + 1), "" + id
+										+ ".html");
+							}
+
+							String html = fetchUrl.fetch(newUrl);
+							Document doc = Jsoup
+									.parse(cleanPreserveLineBreaks(html));
+
+							Element title = doc.getElementById("title");
+							Element text = doc.getElementById("content");
+							if (title != null && text != null) {
+								Section section = new Section();
+								Element script = doc.select("script").first();
+								Pattern p = Pattern
+										.compile("(?is)next_page = \"(.+?)\"");
+								Matcher m = p.matcher(script.html());
+								if (m.find()) {
+									section.nextUrl = m.group(1);
+								}
+								
+								Pattern p2 = Pattern
+										.compile("(?is)preview_page = \"(.+?)\"");
+								Matcher m2 = p2.matcher(script.html());
+								
+								if (m2.find()) {
+									section.prevUrl = m2.group(1);
+								}
+								section.url = newUrl;
+								section.title = Encoding
+										.getGBKStringFromISO8859String(title
+												.text());
+								section.text = Encoding
+										.getGBKStringFromISO8859String(text
+												.text()
+												.replace(NBSP_IN_UTF8, " ")
+												.replace("br2n", "\n"));
+								return section;
+							}
+							return null;
+
+						}
+					});
+			return result;
+
 		} catch (Exception e) {
 
 		}

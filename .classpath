@@ -21,7 +21,6 @@
 	<classpathentry kind="lib" path="ext-lib/commons-beanutils-1.8.3.jar"/>
 	<classpathentry kind="lib" path="ext-lib/commons-beanutils-bean-collections-1.8.3.jar"/>
 	<classpathentry kind="lib" path="ext-lib/commons-beanutils-core-1.8.3.jar"/>
-	<classpathentry kind="lib" path="ext-lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="ext-lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="ext-lib/commons-io-1.3.2.jar"/>
 	<classpathentry kind="lib" path="ext-lib/commons-lang-2.6.jar"/>
@@ -37,14 +36,13 @@
 	<classpathentry kind="lib" path="ext-lib/mail.jar"/>
 	<classpathentry kind="lib" path="ext-lib/mysql-connector-java-5.0.8-bin.jar"/>
 	<classpathentry kind="lib" path="ext-lib/sae-local-1.1.0.jar"/>
-	<classpathentry kind="lib" path="ext-lib/hibernate3.jar"/>
-	<classpathentry kind="lib" path="ext-lib/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="ext-lib/commons-collections-3.1.jar"/>
-	<classpathentry kind="lib" path="ext-lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="ext-lib/javassist-3.12.0.GA.jar"/>
 	<classpathentry kind="lib" path="ext-lib/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="ext-lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry kind="lib" path="ext-lib/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
-	<classpathentry kind="lib" path="ext-lib/slf4j-simple-1.6.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/antlr-2.7.6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/javassist-3.12.0.GA.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-simple-1.6.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
