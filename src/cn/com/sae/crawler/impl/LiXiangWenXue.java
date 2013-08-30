@@ -119,6 +119,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 							result.url = d.getElementsByTag("a").get(0)
 									.attr("href");
 							if (result.url.equals(lastUrl)) {
+								/*
 								String idStr = lastUrl.substring(
 										lastUrl.lastIndexOf('/') + 1).replace(
 										".html", "");
@@ -127,7 +128,8 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 								result.url = lastUrl.replace(
 										lastUrl.substring(lastUrl
 												.lastIndexOf('/') + 1), "" + id
-												+ ".html");
+												+ ".html");*/
+								result.url = null;
 							}
 							lastUrl = result.url;
 							results.add(result);
@@ -177,7 +179,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 										.lastIndexOf('/') + 1), "" + id
 										+ ".html");
 							}
-
+							System.out.println("Retry " + count + " for " + newUrl);
 							String html = fetchUrl.fetch(newUrl);
 							Document doc = Jsoup
 									.parse(cleanPreserveLineBreaks(html));

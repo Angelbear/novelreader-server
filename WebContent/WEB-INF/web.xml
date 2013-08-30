@@ -59,6 +59,10 @@
 	<servlet>
 		<servlet-name>Batch</servlet-name>
 		<servlet-class>cn.com.sae.Batch</servlet-class>
+		<init-param>
+			<param-name>crawler.classes</param-name>
+			<param-value>cn.com.sae.crawler.impl.LiXiangWenXue,cn.com.sae.crawler.impl.LuoQiuZhongWen,cn.com.sae.crawler.impl.WuJiuWenXue</param-value>
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	

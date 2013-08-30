@@ -11,7 +11,13 @@ import com.sina.sae.util.SaeUserInfo;
 
 public class HibernateUtil {
 
-	private static SessionFactory sessionFactory;
+	private static SessionFactory sessionFactoryReadonly = buildSessionFactory(true);
+	
+	private static SessionFactory sessionFactoryWrite = buildSessionFactory(false);
+	
+	private HibernateUtil() {
+		
+	}
 
 	private static SessionFactory buildSessionFactory(boolean readonly) {
 		try {
@@ -27,7 +33,7 @@ public class HibernateUtil {
 				config.setProperty("hibernate.connection.password", SaeUserInfo.getSecretKey());
 			}
 			SessionFactory sessionFactory = config.buildSessionFactory();
-			Logger log = Logger.getLogger("org.hibernate.SQL");
+			Logger log = Logger.getLogger("org.hibernate");
 			log.setLevel(Level.ERROR);
 			return sessionFactory;
 		} catch (Throwable ex) {
@@ -37,12 +43,22 @@ public class HibernateUtil {
 	}
 
 	public static SessionFactory getSessionFactory(boolean readonly) {
-		sessionFactory = buildSessionFactory(readonly);
-		return sessionFactory;
+		if (readonly) {
+			if (sessionFactoryReadonly == null || sessionFactoryReadonly.isClosed()) {
+				sessionFactoryReadonly = buildSessionFactory(true);
+			}
+			return sessionFactoryReadonly;
+		} else {
+			if (sessionFactoryWrite == null || sessionFactoryWrite.isClosed()) {
+				sessionFactoryWrite = buildSessionFactory(false);
+			}
+			return sessionFactoryWrite;
+		}
 	}
 
 	public static void shutdown() {
-		sessionFactory.close();
+		//sessionFactoryReadonly.close();
+		//sessionFactoryWrite.close();
 	}
 
 }

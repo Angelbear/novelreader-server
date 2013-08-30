@@ -33,6 +33,7 @@ public class Retry {
 	 * @throws E
 	 *             リトライしても発生した最後の例外。
 	 */
+	@SuppressWarnings("unchecked")
 	public static final <R, E extends Exception> R retry(int retryCount,
 			Condition<R, E> condition, Logic<R, E> logic) throws E {
 		// 最後に実行した処理と発生した例外。
@@ -206,5 +207,7 @@ public class Retry {
 	 * 処理の継続を示す例外
 	 */
 	private static final class ContinueException extends RuntimeException {
+
+		private static final long serialVersionUID = -706970435091082572L;
 	};
 }

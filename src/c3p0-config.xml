@@ -1,0 +1,7 @@
+<c3p0-config>
+	<default-config>
+		<property name="idleConnectionTestPeriod" value="10" />
+		<property name="testConnectionOnCheckin" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</default-config>
+</c3p0-config>
