@@ -45,5 +45,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-log4j12-1.6.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/c3p0-0.9.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/httl-1.0.11.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

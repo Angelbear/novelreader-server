@@ -1,0 +1,14 @@
+<!--# Set (List<Book> books) -->
+<html>
+    <body>
+        <!--#if(books)-->
+        <table>
+            <!--#for(Book book : books)-->
+            <tr>
+                <td>${book.name}</td>
+            </tr>
+            <!--#end-->
+        </table>
+        <!--#end-->
+    </body>
+</html>
