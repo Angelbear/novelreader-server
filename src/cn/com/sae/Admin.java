@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 
@@ -30,7 +31,8 @@ public class Admin extends BaseHttpServlet {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		SessionFactory factory = HibernateUtil.getSessionFactory(true);
 		Session session = factory.openSession();
-		List<Book> books = session.createCriteria(Book.class).list();
+		List<Book> books = session.createCriteria(Book.class)
+				.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
 		parameters.put("books", books);
 
 		session.close();

@@ -223,9 +223,7 @@ public class Batch extends BaseHttpServlet {
 			if (crawler != null) {
 				List<SectionInfo> sectionInfos = crawler
 						.retriveBookSections(result.url);
-				List<Section> sections = (List<Section>) session
-						.createCriteria(Section.class)
-						.addOrder(Order.asc("id")).list();
+				List<Section> sections = result.sections;
 
 				int start_index = 0;
 
