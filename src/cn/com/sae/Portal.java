@@ -12,6 +12,7 @@ public class Portal extends BaseHttpServlet {
 
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		System.out.println(request.getRequestURI());
 		response.sendRedirect("http://xiaoshuoyuedu-ipa.stor.sinaapp.com/index.html");
 	}
 }

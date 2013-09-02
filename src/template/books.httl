@@ -1,6 +1,25 @@
 <!--# Set (List<Book> books) -->
 <html>
+<head>
+ <script src="http://cdn.jquerytools.org/1.2.7/full/jquery.tools.min.js"></script>
+ <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" type="text/css"
+        href="../static/css/standalone.css"/>
+
+  <link rel="stylesheet" href="../static/css/tabs.css"
+      type="text/css" media="screen" />
+  <link rel="stylesheet" href="../static/css/tabs-panes.css"
+      type="text/css" media="screen" />
+</head>
     <body>
+<div>
+<ul class="tabs">
+	<li><a href="#">Books</a></li>
+	<li><a href="#">Sections</a></li>
+</ul>
+</div>
+<div class="panes">
+	<div id="people">
         <!--#if(books)-->
         <table>
             <!--#for(Book book : books)-->
@@ -16,5 +35,16 @@
             <!--#end-->
         </table>
         <!--#end-->
+</div>
+<div>
+</div>
+</div>
+<script>
+// perform JavaScript after the document is scriptable.
+$(function() {
+    // setup ul.tabs to work as tabs for each div directly under div.panes
+    $("ul.tabs").tabs("div.panes > div");
+});
+</script>
     </body>
 </html>

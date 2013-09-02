@@ -1,0 +1,52 @@
+/* tab pane styling */
+.panes div {
+    display:none;
+    padding:15px 10px;
+    border:1px solid #999;
+    border-top:0;
+    height:100%;
+    font-size:18px;
+    background-color:#fff;
+}
+
+li {
+	list-style-type: none;
+}
+
+li a {
+	text-decoration:none;
+}
+
+li.faculty {
+	list-style-image:url(faculty.gif);
+}
+
+li.undergra {
+	list-style-image:url(under.png);
+}
+
+li.phdstu {
+	list-style-image:url(phdstu.gif);
+}
+
+li.masterstu{
+	list-style-image:url(masterstu.png);
+}
+
+li.master {
+	list-style-image:url(master.jpg);
+}
+
+li.phd {
+	list-style-image:url(phd.gif);
+}
+
+li.interests {
+	list-style-type: circle;
+}
+
+
+li.paper {
+	list-style-type: circle;
+	margin-bottom:10px;
+}

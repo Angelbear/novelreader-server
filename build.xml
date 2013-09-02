@@ -25,6 +25,9 @@
 		<include name="**/*.properties" />
 		<include name="**/*.txt" />
 		<include name="**/*.xml" />
+		<include name="**/*.httl" />
+		<include name="**/*.js" />
+		<include name="**/*.css" />
 	</patternset>
 
 	<path id="classpath">
