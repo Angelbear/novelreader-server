@@ -5,7 +5,13 @@
         <table>
             <!--#for(Book book : books)-->
             <tr>
+            	<td>${book.id}</td>
                 <td>${book.name}</td>
+                <td>${book.url}</td>
+                <td>${book.from}</td>
+                <td><img src="${book.img}"/></td>
+                <td>${book.description}</td>
+                <td>${book.sections.size()}</td>
             </tr>
             <!--#end-->
         </table>

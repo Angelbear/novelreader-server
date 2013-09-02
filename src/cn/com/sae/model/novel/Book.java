@@ -50,5 +50,5 @@ public class Book extends CachableObject {
 	}
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "book_id")
-    private List<Section> sections;
+    public List<Section> sections;
 }
