@@ -40,30 +40,6 @@
   <servlet-class>cn.com.sae.Admin</servlet-class>
  </servlet>
  <servlet-mapping>
-  <servlet-name>default</servlet-name>
-  <url-pattern>*.js</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
-  <servlet-name>default</servlet-name>
-  <url-pattern>*.css</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
-  <servlet-name>default</servlet-name>
-  <url-pattern>*.htm</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
-  <servlet-name>default</servlet-name>
-  <url-pattern>*.html</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
-  <servlet-name>default</servlet-name>
-  <url-pattern>*.jpg</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
-  <servlet-name>Portal</servlet-name>
-  <url-pattern>/</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
   <servlet-name>Note</servlet-name>
   <url-pattern>/note/*</url-pattern>
  </servlet-mapping>
@@ -82,5 +58,9 @@
  <servlet-mapping>
   <servlet-name>Admin</servlet-name>
   <url-pattern>/admin/*</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>Portal</servlet-name>
+  <url-pattern>/*</url-pattern>
  </servlet-mapping>
 </web-app>

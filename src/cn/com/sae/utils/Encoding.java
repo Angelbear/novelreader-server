@@ -38,10 +38,13 @@ public class Encoding {
 		return utfBytes;
 	}
 
+	private static final String NBSP_IN_UTF8 = "\u00a0";
+
 	public static String getGBKStringFromISO8859String(String gbkStr) {
 
 		try {
-			return new String(gbkStr.getBytes("iso-8859-1"), "gb2312");
+			String newStr = gbkStr.replace(NBSP_IN_UTF8, " ");
+			return new String(newStr.getBytes("iso-8859-1"), "gb2312");
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalError();
 		}

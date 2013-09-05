@@ -1,0 +1,16 @@
+<!--#set(Integer currentLength1, Integer maxLength1) -->
+<!--#set(Integer currentLength2, Integer maxLength2) -->
+<html>
+<head>
+</head>
+<body>
+	<div>
+		<meter min="0" max="${maxLength1.intValue()}" style="width: 200px;"
+			value="${currentLength1.intValue()}">${currentLength1.intValue()}</meter>
+	</div>
+	<div>
+		<meter min="0" max="${maxLength2.intValue()}" style="width: 200px;"
+			value="${currentLength2.intValue()}">${currentLength2.intValue()}</meter>
+	</div>
+</body>
+</html>

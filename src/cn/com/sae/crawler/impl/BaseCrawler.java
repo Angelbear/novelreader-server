@@ -8,8 +8,12 @@ public abstract class BaseCrawler {
 	public BaseCrawler() {
 		fetchUrl = new SaeFetchurl();
 	}
-	
+
 	public static String cleanPreserveLineBreaks(String bodyHtml) {
-	    return bodyHtml.replace("<br />", "br2n");
+		return bodyHtml.replace("<br />", "br2n");
+	}
+
+	public String[] filterStrings() {
+		return null;
 	}
 }

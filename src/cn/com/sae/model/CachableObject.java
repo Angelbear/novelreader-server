@@ -1,4 +1,4 @@
-package cn.com.sae.model;
+ package cn.com.sae.model;
 
 import java.io.Serializable;
 

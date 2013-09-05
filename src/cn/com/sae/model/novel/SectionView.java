@@ -5,18 +5,17 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+
+import org.hibernate.annotations.Subselect;
 
 import cn.com.sae.annotation.MustFilterField;
 import cn.com.sae.model.CachableObject;
 
 @Entity
-@Table(name = "sections" , uniqueConstraints = {
-		@UniqueConstraint(columnNames = "id"),
-		@UniqueConstraint(columnNames = "url") })
-public class Section extends CachableObject {
-	private static final long serialVersionUID = -1911020462461950224L;
+@Subselect("SELECT id, book_id, name, source, url, last_update_time, prev_url, next_url FROM sections")
+public class SectionView extends CachableObject {
+
+	private static final long serialVersionUID = 678427197568076436L;
 
 	@Id
 	@Column(name = "id")
@@ -32,10 +31,6 @@ public class Section extends CachableObject {
 
 	@Column(name = "source")
 	public String from;
-
-	@Column(name = "text")
-	@MustFilterField
-	public String text;
 
 	@Column(name = "url")
 	public String url;

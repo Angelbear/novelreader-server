@@ -1,50 +1,31 @@
-<!--# Set (List<Book> books) -->
 <html>
 <head>
- <script src="http://cdn.jquerytools.org/1.2.7/full/jquery.tools.min.js"></script>
- <link rel="shortcut icon" href="favicon.ico">
-  <link rel="stylesheet" type="text/css"
-        href="../static/css/standalone.css"/>
-
-  <link rel="stylesheet" href="../static/css/tabs.css"
-      type="text/css" media="screen" />
-  <link rel="stylesheet" href="../static/css/tabs-panes.css"
-      type="text/css" media="screen" />
-</head>
-    <body>
-<div>
-<ul class="tabs">
-	<li><a href="#">Books</a></li>
-	<li><a href="#">Sections</a></li>
-</ul>
-</div>
-<div class="panes">
-	<div id="people">
-        <!--#if(books)-->
-        <table>
-            <!--#for(Book book : books)-->
-            <tr>
-            	<td>${book.id}</td>
-                <td>${book.name}</td>
-                <td>${book.url}</td>
-                <td>${book.from}</td>
-                <td><img src="${book.img}"/></td>
-                <td>${book.description}</td>
-                <td>${book.sections.size()}</td>
-            </tr>
-            <!--#end-->
-        </table>
-        <!--#end-->
-</div>
-<div>
-</div>
-</div>
 <script>
-// perform JavaScript after the document is scriptable.
-$(function() {
-    // setup ul.tabs to work as tabs for each div directly under div.panes
-    $("ul.tabs").tabs("div.panes > div");
-});
+	function ImgError(source) {
+		source.src = "/static/img/placeholder.png";
+		source.onerror = "";
+		return true;
+	}
 </script>
-    </body>
+</head>
+<body>
+	<div id="books">
+		<!--#if(books)-->
+		<table border="1">
+			<!--#for(Book book : books)-->
+			<tr>
+				<td>${book.id}</td>
+				<td><a href="/admin/section_list?book_id=${book.id}&page_no=0&json=0"><img
+						src="${book.img}" alt="${book.name}" onerror="ImgError(this);"
+						style="width: 100px;" /></a></td>
+				<td>${book.name}</td>
+				<td><a href="${book.url}">${book.url}</a></td>
+				<td>${book.from}</td>
+				<td>${book.description}</td>
+			</tr>
+			<!--#end-->
+		</table>
+		<!--#end-->
+	</div>
+</body>
 </html>

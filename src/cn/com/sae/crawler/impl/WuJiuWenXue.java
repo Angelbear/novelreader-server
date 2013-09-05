@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -98,7 +100,7 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 						book.description = Encoding
 								.getGBKStringFromISO8859String(description
 										.last().parent().text()
-										.replace(NBSP_IN_UTF8, ""));
+										.replace("br2n", "\n"));
 					}
 					book.from = this.crawlerName();
 					return book;
@@ -144,8 +146,6 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 		return String.format("%x", new BigInteger(1, arg.getBytes("utf-8")));
 	}
 
-	public static final String NBSP_IN_UTF8 = "\u00a0";
-
 	@Override
 	public Section getSection(String secUrl) {
 		try {
@@ -156,6 +156,24 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 				Element content = doc.getElementById("content");
 				if (title.last() != null && content != null) {
 					Section section = new Section();
+
+					Element script = doc.select("script").first();
+					Pattern p = Pattern.compile("(?is)next_page = \"(.+?)\"");
+					Matcher m = p.matcher(script.html());
+					if (m.find()) {
+						section.nextUrl = PathUtilities.resolveRelativePath(
+								m.group(1), secUrl);
+					}
+
+					Pattern p2 = Pattern
+							.compile("(?is)preview_page = \"(.+?)\"");
+					Matcher m2 = p2.matcher(script.html());
+
+					if (m2.find()) {
+						section.prevUrl = PathUtilities.resolveRelativePath(
+								m2.group(1), secUrl);
+					}
+
 					section.title = Encoding
 							.getGBKStringFromISO8859String(title.last().text());
 					Document secText = Jsoup.parseBodyFragment(content.text());
@@ -163,8 +181,8 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 					secText.outputSettings().escapeMode(EscapeMode.xhtml);
 					section.text = Encoding
 							.getGBKStringFromISO8859String(secText.text()
-									.replace(NBSP_IN_UTF8, " ")
 									.replace("br2n", "\n"));
+					section.url = secUrl;
 					return section;
 				}
 			}
@@ -193,6 +211,12 @@ public class WuJiuWenXue extends BaseCrawler implements WebSiteCrawler {
 	public List<SearchResult> getCategory(int type, int pageNo) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String[] filterStrings() {
+		return new String[] { "【 注册会员可获私人书架，看书更方便！59文学永久地址：www.59to.com 】",
+				"注册59会员", "举报错误章节" };
 	}
 
 	@Override

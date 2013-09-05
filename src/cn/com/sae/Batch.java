@@ -24,6 +24,7 @@ import cn.com.sae.db.HibernateUtil;
 import cn.com.sae.model.novel.Book;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
+import cn.com.sae.model.novel.SectionView;
 import cn.com.sae.utils.Common;
 import cn.com.sae.utils.DataValidator;
 
@@ -223,15 +224,15 @@ public class Batch extends BaseHttpServlet {
 			if (crawler != null) {
 				List<SectionInfo> sectionInfos = crawler
 						.retriveBookSections(result.url);
-				List<Section> sections = result.sections;
+				List<SectionView> section_views = result.sections;
 
 				int start_index = 0;
 
 				if (sectionInfos != null) {
 					// Have update
-					if (sections == null
-							|| sectionInfos.size() > sections.size()) {
-						start_index = sections == null ? 0 : sections.size();
+					if (section_views == null
+							|| sectionInfos.size() > section_views.size()) {
+						start_index = section_views == null ? 0 : section_views.size();
 						for (int i = start_index; i < sectionInfos.size(); i++) {
 							SectionInfo info = sectionInfos.get(i);
 							Section s = new Section();
@@ -246,7 +247,7 @@ public class Batch extends BaseHttpServlet {
 
 				session.flush();
 
-				sections = (List<Section>) session
+				List<Section> sections = (List<Section>) session
 						.createCriteria(Section.class)
 						.addOrder(Order.asc("id")).list();
 

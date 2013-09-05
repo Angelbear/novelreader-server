@@ -85,7 +85,8 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 				if (description.last() != null) {
 					book.description = Encoding
 							.getGBKStringFromISO8859String(description.last()
-									.child(4).text());
+									.child(4).text().replace("br2n", "\n"));
+
 				}
 				book.from = this.crawlerName();
 				return book;
@@ -120,15 +121,13 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 									.attr("href");
 							if (result.url.equals(lastUrl)) {
 								/*
-								String idStr = lastUrl.substring(
-										lastUrl.lastIndexOf('/') + 1).replace(
-										".html", "");
-								int id = Integer.parseInt(idStr);
-								id += 1;
-								result.url = lastUrl.replace(
-										lastUrl.substring(lastUrl
-												.lastIndexOf('/') + 1), "" + id
-												+ ".html");*/
+								 * String idStr = lastUrl.substring(
+								 * lastUrl.lastIndexOf('/') + 1).replace(
+								 * ".html", ""); int id =
+								 * Integer.parseInt(idStr); id += 1; result.url
+								 * = lastUrl.replace( lastUrl.substring(lastUrl
+								 * .lastIndexOf('/') + 1), "" + id + ".html");
+								 */
 								result.url = null;
 							}
 							lastUrl = result.url;
@@ -144,8 +143,6 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 		}
 		return results;
 	}
-
-	public static final String NBSP_IN_UTF8 = "\u00a0";
 
 	public Section getSection(final String secUrl) {
 		// 処理中で実行時例外が発生したらリトライする条件
@@ -179,7 +176,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 										.lastIndexOf('/') + 1), "" + id
 										+ ".html");
 							}
-							System.out.println("Retry " + count + " for " + newUrl);
+
 							String html = fetchUrl.fetch(newUrl);
 							Document doc = Jsoup
 									.parse(cleanPreserveLineBreaks(html));
@@ -195,11 +192,11 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 								if (m.find()) {
 									section.nextUrl = m.group(1);
 								}
-								
+
 								Pattern p2 = Pattern
 										.compile("(?is)preview_page = \"(.+?)\"");
 								Matcher m2 = p2.matcher(script.html());
-								
+
 								if (m2.find()) {
 									section.prevUrl = m2.group(1);
 								}
@@ -209,9 +206,7 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 												.text());
 								section.text = Encoding
 										.getGBKStringFromISO8859String(text
-												.text()
-												.replace(NBSP_IN_UTF8, " ")
-												.replace("br2n", "\n"));
+												.text().replace("br2n", "\n"));
 								return section;
 							}
 							return null;
@@ -299,6 +294,11 @@ public class LiXiangWenXue extends BaseCrawler implements WebSiteCrawler {
 	@Override
 	public String crawlerName() {
 		return "lixiangwenxue";
+	}
+
+	@Override
+	public String[] filterStrings() {
+		return new String[] { "无弹窗", "\\(理想文学 www.lixiangwenxue.com\\)" };
 	}
 
 	@Override

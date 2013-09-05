@@ -16,6 +16,7 @@ import cn.com.sae.model.novel.CategoryInfo;
 import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionInfo;
 import cn.com.sae.proxy.CacheInvocationHandler;
+import cn.com.sae.proxy.FilterInvocationHandler;
 import cn.com.sae.utils.ProxyUtils;
 
 public class NovelSearchEngine {
@@ -40,7 +41,10 @@ public class NovelSearchEngine {
 				WebSiteCrawler crawlerProxy = (WebSiteCrawler) ProxyUtils
 						.createProxy(WebSiteCrawler.class,
 								new CacheInvocationHandler(crawler));
-				crawlerImpl.put(crawler.crawlerName(), crawlerProxy);
+				WebSiteCrawler crawlerProxy2 = (WebSiteCrawler) ProxyUtils
+						.createProxy(WebSiteCrawler.class,
+								new FilterInvocationHandler(crawlerProxy));
+				crawlerImpl.put(crawler.crawlerName(), crawlerProxy2);
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {

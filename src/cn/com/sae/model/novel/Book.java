@@ -1,6 +1,5 @@
 package cn.com.sae.model.novel;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -13,6 +12,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.BatchSize;
+
+import cn.com.sae.annotation.MustFilterField;
 import cn.com.sae.model.CachableObject;
 
 @Entity
@@ -24,15 +26,16 @@ public class Book extends CachableObject {
 
 	@Id
 	@Column(name = "id")
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public int id;
 
 	@Column(name = "name")
+	@MustFilterField
 	public String name;
 
 	@Column(name = "url")
 	public String url;
-	
+
 	@Column(name = "source")
 	public String from;
 
@@ -40,15 +43,13 @@ public class Book extends CachableObject {
 	public String img;
 
 	@Column(name = "description")
+	@MustFilterField
 	public String description;
 
 	@Column(name = "last_update_time")
 	private long last_update_time;
 
-	public long getLast_update_time() {
-		return new Date().getTime();
-	}
-
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "book_id")
-    public List<Section> sections;
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "book_id")
+	@BatchSize(size = 10)
+	public List<SectionView> sections;
 }

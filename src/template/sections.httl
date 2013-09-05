@@ -1,0 +1,79 @@
+<!--#set(Book book) -->
+<html>
+<head><script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>
+function ImgError(source){
+source.src = "/static/img/placeholder.png";
+source.onerror = "";
+return true;
+}
+
+var next_page = 1;
+function load_more() {
+	$.getJSON('/admin/section_list?book_id=${book.id}&page_no='+next_page+'&json=1', function(data) {
+		 $.each(data, function(index, value) {
+			 var row = "<tr><td>" + value.id + 
+			 "</td><td>" + value.book_id + 
+			 "</td><td>" + value.title + 
+			 "</td><td><a href=" + value.url + 
+			 ">"+value.url+"</a></td><td>" + value.from +
+			 "</td><td><a href=" + value.prevUrl + 
+			 ">" + value.prevUrl +
+			 "</a></td><td><a href=" + value.nextUrl + 
+			 ">"+ value.nextUrl + "</a></td></tr>";
+			 $('#section_list tr:last').after(row);
+		 });
+		 if (data.length > 0) {
+			 next_page++;
+			 load_more();
+		 }
+	});
+}
+</script>
+</head>
+<body>
+	<div>
+		<a href="/admin/book_list">&lt;---Return to Book List</a>
+	</div>
+	<!--#if(book)-->
+	<div>
+		<table>
+			<tr>
+				<td>${book.id}</td>
+				<td><a href="/admin/section_list?book_id=${book.id}&page_no=0&json=0"><img
+						src="${book.img}" alt="${book.name}" onerror="ImgError(this);"
+						style="width: 100px;" /></a></td>
+				<td>${book.name}</td>
+			</tr>
+		</table>
+	</div>
+	<div id="sections">
+		<table border="1" id="section_list">
+			<tr>
+				<td>id</td>
+				<td>book_id</td>
+				<td>title</td>
+				<td>url</td>
+				<td>source</td>
+				<td>prev_url</td>
+				<td>next_url</td>
+			</tr>
+			<!--#for(SectionView sec : sections)-->
+			<tr>
+				<td>${sec.id}</td>
+				<td>${sec.book_id}</td>
+				<td>${sec.title}</td>
+				<td><a href="${sec.url}">${sec.url}</a></td>
+				<td>${sec.from}</td>
+				<td><a href="${sec.prevUrl}">${sec.prevUrl}</a></td>
+				<td><a href="${sec.nextUrl}">${sec.nextUrl}</a></td>
+			</tr>
+			<!--#end-->
+		</table>
+	</div>
+	<div>
+		<a id="load_more_href" href="javascript:load_more();">Load More</a>
+	</div>
+	<!--#end-->
+</body>
+</html>
