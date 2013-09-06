@@ -23,8 +23,7 @@ public class Portal extends BaseHttpServlet {
 		if (relativeWebPath.equals("/")) {
 			response.sendRedirect("http://xiaoshuoyuedu-ipa.stor.sinaapp.com/index.html");
 		} else {
-			String absolutePath = (Common.isProduction() ? "/WEB-INF/classes"
-					: "/WEB-INF") + relativeWebPath;
+			String absolutePath = "/WEB-INF/classes" + relativeWebPath;
 
 			String contentType = getServletContext().getMimeType(absolutePath);
 
