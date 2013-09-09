@@ -37,8 +37,7 @@ div.monelem_sheaf {
 
 .textData {
 	display: none;
-	font-family: 宋体,新细明体,Verdana,Arial,sans-serif;
-	font-size: 14px;
+	font-family: 宋体, 新细明体, Verdana, Arial, sans-serif;
 	MARGIN: 0px;
 }
 
@@ -108,20 +107,33 @@ div.monelem_sheaf {
         return bt;
       }
 
+      function jumpPage() {
+    		var event = document.all ? window.event : arguments[0];
+    	  console.log(event);
+    	  if (event.keyCode==39) {
+        	  window.reader.moveTo( { page : window.reader.getPlace().pageNumber() + 1 } );
+          }
+    	  if (event.keyCode==37) {
+    		  window.reader.moveTo( { page : window.reader.getPlace().pageNumber() - 1 } );
+          }
+    	}
+    	document.onkeydown=jumpPage;
+
       // Initialize the reader element.
       Monocle.Events.listen(
         window,
         'load',
         function () {
           var readerOptions = {
-            panels: Monocle.Panels.Magic,
-            flipper: Monocle.Flippers.Scroller
+            panels: Monocle.Panels.eInk,
+            flipper: Monocle.Flippers.Slider,
+            stylesheet : 'body { font-family: 宋体, 新细明体, Verdana, Arial, sans-serif; }'
           };
 
   
 
           Monocle.Reader('toc', bookData, readerOptions, function (rdr) {
-            window.reader5 = rdr;
+            window.reader = rdr;
             var toc = Monocle.Controls.Contents(rdr);
             rdr.addControl(toc, 'popover', { hidden: true });
             createBookTitle(
@@ -147,6 +159,7 @@ div.monelem_sheaf {
            <!--#end-->
         }
       );
+	      
     </script>
 
 </head>
@@ -156,12 +169,12 @@ div.monelem_sheaf {
 		<style type="text/css">
 body {
 	font-family: 宋体, 新细明体, Verdana, Arial, sans-serif;
-	font-size: 14px;
 	MARGIN: 0px;
 }
 
 p {
 	line-height: 130%;
+	font-family: 宋体, 新细明体, Verdana, Arial, sans-serif;
 }
 
 .dedication {
