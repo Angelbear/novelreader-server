@@ -9,8 +9,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import cn.com.sae.utils.Common;
-
 public class Portal extends BaseHttpServlet {
 
 	private static final long serialVersionUID = -2747596017528957511L;

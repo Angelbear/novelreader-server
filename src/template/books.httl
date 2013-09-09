@@ -1,6 +1,7 @@
 <html>
 <head>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script
+	src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script>
 	function ImgError(source) {
 		source.src = "/static/img/placeholder.png";
@@ -9,38 +10,35 @@
 	}
 
 	function update_book(book_id) {
-		console.log(book_id);
-	}
-	
-	var next_page = 1;
-	function load_more() {
-		$.getJSON('/admin/section_list?book_id=${book.id}&page_no='+next_page+'&json=1', function(data) {
-			 $.each(data, function(index, value) {
-				 var row = "<tr><td>" + value.id + 
-				 "</td><td>" + value.book_id + 
-				 "</td><td>" + value.title + 
-				 "</td><td><a href=" + value.url + 
-				 ">"+value.url+"</a></td><td>" + value.from +
-				 "</td><td><a href=" + value.prevUrl + 
-				 ">" + value.prevUrl +
-				 "</a></td><td><a href=" + value.nextUrl + 
-				 ">"+ value.nextUrl + "</a></td></tr>";
-				 $('#section_list tr:last').after(row);
-			 });
-			 if (data.length > 0) {
-				 next_page++;
-				 load_more();
-			 }
+		$.post("/admin/update_book", {
+			'book_id' : book_id
+		}).done(function(data) {
+			var book = data;
+			console.log(book);
+			var row = "<td>"+ book.id +
+					"</td><td><a href=\"/admin/section_list?book_id=" + book.id + 
+					"&page_no=0&json=0\"><img src=\"" + book.img + 
+					"\" alt=\""+ book.name + 
+					"\" onerror=\"ImgError(this);\" style=\"width: 100px;\" /></a></td><td>" +  
+					book.name + "</td><td><a href=\"" + 
+					book.url + "\">" + 
+					book.url + "</a></td><td>" + 
+					book.from + "</td><td>" + 
+					book.description + "</td><td><button onclick=\"javascript:update_book('" + 
+					book.id +"');\">Update</button></td>";
+			console.log(row);
+			$('#book-'+ book_id).html(row);
 		});
+		
 	}
 </script>
 </head>
 <body>
 	<div id="books">
 		<!--#if(books)-->
-		<table border="1">
+		<table border="1" id="book_list">
 			<!--#for(Book book : books)-->
-			<tr>
+			<tr id="book-${book.id}">
 				<td>${book.id}</td>
 				<td><a
 					href="/admin/section_list?book_id=${book.id}&page_no=0&json=0"><img

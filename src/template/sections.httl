@@ -12,7 +12,7 @@ var next_page = 1;
 function load_more() {
 	$.getJSON('/admin/section_list?book_id=${book.id}&page_no='+next_page+'&json=1', function(data) {
 		 $.each(data, function(index, value) {
-			 var row = "<tr><td>" + value.id + 
+			 var row = "<tr id=\"" + value.id + "\"><td>" + value.id + 
 			 "</td><td>" + value.book_id + 
 			 "</td><td>" + value.title + 
 			 "</td><td><a href=" + value.url + 
@@ -20,7 +20,8 @@ function load_more() {
 			 "</td><td><a href=" + value.prevUrl + 
 			 ">" + value.prevUrl +
 			 "</a></td><td><a href=" + value.nextUrl + 
-			 ">"+ value.nextUrl + "</a></td></tr>";
+			 ">"+ value.nextUrl + "</a></td>"  + 
+			 "<td><button onclick=\"javascript:update_section(" + value.id +");\">Update</button></td></tr>";
 			 $('#section_list tr:last').after(row);
 		 });
 		 if (data.length > 0) {
@@ -28,6 +29,27 @@ function load_more() {
 			 load_more();
 		 }
 	});
+}
+
+function update_section(section_id) {
+	$.post("/admin/update_section", {
+		'section_id' : section_id
+	}).done(function(data) {
+		var value = data;
+		console.log(value);
+		var row = "<td>" + value.id + 
+		 "</td><td>" + value.book_id + 
+		 "</td><td>" + value.title + 
+		 "</td><td><a href=" + value.url + 
+		 ">"+value.url+"</a></td><td>" + value.from +
+		 "</td><td><a href=" + value.prevUrl + 
+		 ">" + value.prevUrl +
+		 "</a></td><td><a href=" + value.nextUrl + 
+		 ">"+ value.nextUrl + "</a></td>" + 
+		 "<td><button onclick=\"javascript:update_section(" + value.id +");\">Update</button></td>"
+		 $('#section-'+value.id).html(row);
+	});
+	
 }
 </script>
 </head>
@@ -57,9 +79,10 @@ function load_more() {
 				<td>source</td>
 				<td>prev_url</td>
 				<td>next_url</td>
+				<td></td>
 			</tr>
 			<!--#for(SectionView sec : sections)-->
-			<tr>
+			<tr  id="section-{$sec.id}">
 				<td>${sec.id}</td>
 				<td>${sec.book_id}</td>
 				<td>${sec.title}</td>
@@ -67,6 +90,7 @@ function load_more() {
 				<td>${sec.from}</td>
 				<td><a href="${sec.prevUrl}">${sec.prevUrl}</a></td>
 				<td><a href="${sec.nextUrl}">${sec.nextUrl}</a></td>
+				<td><button onclick="javascript:update_section(${sec.id});">Update</button></td>
 			</tr>
 			<!--#end-->
 		</table>

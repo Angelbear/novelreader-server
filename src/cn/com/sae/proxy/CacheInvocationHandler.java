@@ -14,19 +14,16 @@ import com.sina.sae.kvdb.SaeKV;
 import com.sina.sae.kvdb.SaeKVUtil;
 import com.sina.sae.memcached.SaeMemcache;
 
-public class CacheInvocationHandler implements InvocationHandler {
+public class CacheInvocationHandler extends BaseInvocationHandler implements InvocationHandler {
 	private SaeKV saeKV;
 	private SaeMemcache mc;
 
-	private Object proxied;
-
 	public CacheInvocationHandler(Object proxied) {
-		super();
+		super(proxied);
 		saeKV = new SaeKV();
 		mc = new SaeMemcache();
 		saeKV.init();
 		mc.init();
-		this.proxied = proxied;
 	}
 
 	private Object getSearchResultFromSaeKV(Method method, String func,

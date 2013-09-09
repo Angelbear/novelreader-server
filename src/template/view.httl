@@ -1,0 +1,209 @@
+<!--#set(Book book) -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script
+	src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<link href="/static/css/monocore.css" rel="stylesheet" type="text/css" />
+<link href="/static/css/monoctrl.css" rel="stylesheet" type="text/css" />
+<script src="/static/js/monocore.js"></script>
+<script src="/static/js/monoctrl.js"></script>
+<style type="text/css">
+.readerInfo .reader {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	position: absolute;
+}
+
+div.monelem_container {
+	background: #EEE;
+}
+
+div.monelem_page {
+	border: none;
+	box-shadow: #999 2px 0px 2px;
+	-moz-box-shadow: #999 2px 0px 2px;
+	-webkit-box-shadow: #999 2px 0px 2px;
+}
+
+div.monelem_sheaf {
+	top: 2em;
+}
+
+.textData {
+	display: none;
+	font-family: 宋体,新细明体,Verdana,Arial,sans-serif;
+	font-size: 14px;
+	MARGIN: 0px;
+}
+
+.runner {
+	font-variant: small-caps;
+	font-size: 87%;
+	color: #900;
+}
+
+.bookTitle {
+	position: absolute;
+	top: 1em;
+	width: 100%;
+	text-align: center;
+	cursor: pointer;
+}
+</style>
+<script type="text/javascript">
+      Monocle.DEBUG = true;
+
+      var bookData = {
+        getComponents: function () {
+          return [
+			<!--#for(SectionView sec : book.sections) -->
+				'${sec.id}',
+            <!--#end-->
+          ];
+        },
+        getContents: function () {
+          return [
+			<!--#for(SectionView sec : book.sections) -->
+			{
+			    title: "${sec.title}",
+			    src: '${sec.id}'
+			  },
+			<!--#end-->
+          ]
+        },
+        getComponent: function (cmptId) {
+            var key = "section-" + cmptId;
+          return { nodes: [document.getElementById(key).cloneNode(true)] };
+        },
+        getMetaData: function(key) {
+          return {
+            title: "${book.name}",
+            creator: "${book.name}"
+          }[key];
+        }
+      }
+
+
+      function createBookTitle(reader, contactListeners) {
+        var bt = {}
+        bt.createControlElements = function () {
+          cntr = document.createElement('div');
+          cntr.className = "bookTitle";
+          runner = document.createElement('div');
+          runner.className = "runner";
+          runner.innerHTML = reader.getBook().getMetaData('title');
+          cntr.appendChild(runner);
+          if (contactListeners) {
+            Monocle.Events.listenForContact(cntr, contactListeners);
+          }
+          return cntr;
+        }
+        reader.addControl(bt, 'page');
+        return bt;
+      }
+
+      // Initialize the reader element.
+      Monocle.Events.listen(
+        window,
+        'load',
+        function () {
+          var readerOptions = {
+            panels: Monocle.Panels.Magic,
+            flipper: Monocle.Flippers.Scroller
+          };
+
+  
+
+          Monocle.Reader('toc', bookData, readerOptions, function (rdr) {
+            window.reader5 = rdr;
+            var toc = Monocle.Controls.Contents(rdr);
+            rdr.addControl(toc, 'popover', { hidden: true });
+            createBookTitle(
+              rdr,
+              {
+                start: function () {
+                  rdr.showControl(toc);
+                }
+              }
+            );
+          });
+
+          <!--#for(SectionView sec : book.sections) -->
+          $.getJSON("/view/section?section_id="+ ${sec.id}, function(data) {
+              var section = data;
+              var html = "<div id=\"section-" + ${sec.id} + "\" class=\"textData\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
+              if ($("#section-" + ${sec.id}).length == 0) {
+              	   $('#section-data div:last').after(html);
+              } else {
+           	       $("#section-" + ${sec.id}).html(html);
+              }
+           });
+           <!--#end-->
+        }
+      );
+    </script>
+
+</head>
+
+<body>
+	<div class="readerInfo">
+		<style type="text/css">
+body {
+	font-family: 宋体, 新细明体, Verdana, Arial, sans-serif;
+	font-size: 14px;
+	MARGIN: 0px;
+}
+
+p {
+	line-height: 130%;
+}
+
+.dedication {
+	text-align: center;
+	font-style: italic;
+	margin: 16em 0 16em;
+}
+
+.center {
+	text-align: center;
+}
+
+h1,h2,h3 {
+	text-align: center;
+}
+
+h1 small {
+	font-size: 85%;
+	font-variant: small-caps;
+}
+
+h2 {
+	margin-bottom: 3em;
+	font-weight: normal;
+}
+
+h2 small {
+	font-size: 85%;
+	font-style: italic;
+}
+</style>
+		<div class="reader" id="toc"></div>
+	</div>
+	<div id="section-data">
+		<!--#for(SectionView sec : book.sections) -->
+		<div id="section-${sec.id}" class="textData">
+			<h3>${sec.title}</h3>
+			<p></p>
+		</div>
+		<!--#end-->
+	</div>
+</body>
+
+
+</html>

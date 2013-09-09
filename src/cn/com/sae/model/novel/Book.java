@@ -9,10 +9,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import org.hibernate.annotations.BatchSize;
 
 import cn.com.sae.annotation.MustFilterField;
 import cn.com.sae.model.CachableObject;
@@ -50,6 +49,6 @@ public class Book extends CachableObject {
 	private long last_update_time;
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "book_id")
-	@BatchSize(size = 10)
+	@OrderBy("id")
 	public List<SectionView> sections;
 }

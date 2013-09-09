@@ -38,6 +38,14 @@
  <servlet>
   <servlet-name>Admin</servlet-name>
   <servlet-class>cn.com.sae.Admin</servlet-class>
+  <init-param>
+   <param-name>crawler.classes</param-name>
+   <param-value>cn.com.sae.crawler.impl.LiXiangWenXue,cn.com.sae.crawler.impl.LuoQiuZhongWen,cn.com.sae.crawler.impl.WuJiuWenXue</param-value>
+  </init-param>
+ </servlet>
+ <servlet>
+  <servlet-name>Read</servlet-name>
+  <servlet-class>cn.com.sae.Read</servlet-class>
  </servlet>
  <servlet-mapping>
   <servlet-name>Note</servlet-name>
@@ -58,6 +66,10 @@
  <servlet-mapping>
   <servlet-name>Admin</servlet-name>
   <url-pattern>/admin/*</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>Read</servlet-name>
+  <url-pattern>/view/*</url-pattern>
  </servlet-mapping>
  <servlet-mapping>
   <servlet-name>Portal</servlet-name>

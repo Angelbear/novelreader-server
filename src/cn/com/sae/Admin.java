@@ -2,8 +2,6 @@ package cn.com.sae;
 
 import httl.Engine;
 import httl.Template;
-import net.arnx.jsonic.JSON;
-import net.arnx.jsonic.JSONException;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -15,16 +13,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.arnx.jsonic.JSON;
+import net.arnx.jsonic.JSONException;
+
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
+import cn.com.sae.controller.NovelSearchEngine;
+import cn.com.sae.crawler.WebSiteCrawler;
 import cn.com.sae.db.HibernateUtil;
 import cn.com.sae.model.novel.Book;
+import cn.com.sae.model.novel.Section;
 import cn.com.sae.model.novel.SectionView;
+import cn.com.sae.proxy.FilterInvocationHandler;
 import cn.com.sae.utils.DataValidator;
+import cn.com.sae.utils.ProxyUtils;
 
 import com.sina.sae.taskqueue.SaeTaskQueue;
 
@@ -37,6 +43,10 @@ public class Admin extends BaseHttpServlet {
 
 	private static DataValidator listSectionsValidator = new DataValidator(
 			listSectionsRules);
+
+	public void init() {
+		NovelSearchEngine.init(this.getServletConfig());
+	}
 
 	@SuppressWarnings("unchecked")
 	private void doListSections(Map<String, String[]> params,
@@ -146,6 +156,128 @@ public class Admin extends BaseHttpServlet {
 			e.printStackTrace();
 		} catch (ParseException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private static String[][] updateBookBatchRules = { { "book_id", "Int" } };
+
+	private static DataValidator updateBookBatchValidator = new DataValidator(
+			updateBookBatchRules);
+
+	private void doUpdateBookBatch(Map<String, String[]> params,
+			HttpServletResponse response) throws ServletException, IOException {
+		Map<String, String> opts = updateBookBatchValidator
+				.validateHttpParamData(params);
+
+		if (opts != null) {
+			SessionFactory factory = HibernateUtil.getSessionFactory(true);
+			Session session = factory.openSession();
+
+			Book record = (Book) session.get(Book.class,
+					Integer.parseInt(opts.get("book_id")));
+			session.close();
+			if (record != null) {
+				factory = HibernateUtil.getSessionFactory(false);
+				session = factory.openSession();
+				WebSiteCrawler crawler = NovelSearchEngine
+						.getCrawlerByName(record.from);
+				WebSiteCrawler originCrawler = (WebSiteCrawler) ProxyUtils
+						.unwrapProxy(crawler);
+				WebSiteCrawler filterCrawler = (WebSiteCrawler) ProxyUtils
+						.createProxy(WebSiteCrawler.class,
+								new FilterInvocationHandler(originCrawler));
+				Book result = filterCrawler
+						.getBookInfoFromSearchResult(record.url);
+				if (result != null) {
+					record.name = result.name;
+					record.img = result.img;
+					record.description = result.description;
+					session.update(record);
+
+					_writeOKHTMLHeader(response);
+					result.id = record.id;
+					response.getWriter().println(JSON.encode(result));
+				}
+				session.flush();
+			}
+		} else {
+			_errorOutput(response);
+		}
+	}
+
+	private static String[][] updateSectionBatchRules = { { "section_id", "Int" } };
+
+	private static DataValidator updateSectionBatchValidator = new DataValidator(
+			updateSectionBatchRules);
+
+	@SuppressWarnings("unchecked")
+	private void doUpdateSectionBatch(Map<String, String[]> params,
+			HttpServletResponse response) throws ServletException, IOException {
+		Map<String, String> opts = updateSectionBatchValidator
+				.validateHttpParamData(params);
+
+		if (opts != null) {
+			SessionFactory factory = HibernateUtil.getSessionFactory(true);
+			Session session = factory.openSession();
+
+			Section record = (Section) session.get(Section.class,
+					Integer.parseInt(opts.get("section_id")));
+			session.close();
+			if (record != null) {
+				factory = HibernateUtil.getSessionFactory(false);
+				session = factory.openSession();
+				WebSiteCrawler crawler = NovelSearchEngine
+						.getCrawlerByName(record.from);
+				WebSiteCrawler originCrawler = (WebSiteCrawler) ProxyUtils
+						.unwrapProxy(crawler);
+				WebSiteCrawler filterCrawler = (WebSiteCrawler) ProxyUtils
+						.createProxy(WebSiteCrawler.class,
+								new FilterInvocationHandler(originCrawler));
+				Section result = null;
+				if (record.url != null) {
+					result = filterCrawler.getSection(record.url);
+				} else {
+					List<Section> prev_sections = (List<Section>) session
+							.createCriteria(Section.class)
+							.add(Restrictions.lt("id", record.id))
+							.addOrder(Order.desc("id")).setMaxResults(1).list();
+					if (prev_sections.size() > 0) {
+						Section prev_section = prev_sections.get(0);
+						if (prev_section.nextUrl != null
+								&& prev_section.nextUrl.length() > 0) {
+							result = filterCrawler
+									.getSection(prev_section.nextUrl);
+						}
+					}
+				}
+
+				if (result != null) {
+					record.text = result.text;
+					record.url = result.url;
+					record.prevUrl = result.prevUrl;
+					record.nextUrl = result.nextUrl;
+					session.update(record);
+
+					_writeOKHTMLHeader(response);
+					result.id = record.id;
+					response.getWriter().println(JSON.encode(result));
+				}
+				session.flush();
+			}
+		} else {
+			_errorOutput(response);
+		}
+	}
+
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		String uri = request.getRequestURI();
+		if (uri.equals("/admin/update_book")) {
+			doUpdateBookBatch(request.getParameterMap(), response);
+		} else if (uri.equals("/admin/update_section")) {
+			doUpdateSectionBatch(request.getParameterMap(), response);
+		} else {
+			_errorOutput(response);
 		}
 	}
 

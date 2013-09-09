@@ -8,23 +8,18 @@ import cn.com.sae.annotation.MustFilterField;
 import cn.com.sae.annotation.UseFilter;
 import cn.com.sae.crawler.WebSiteCrawler;
 
-public class FilterInvocationHandler implements InvocationHandler {
-
+public class FilterInvocationHandler extends BaseInvocationHandler implements InvocationHandler {
 	
-	private Object proxied;
-
 	public FilterInvocationHandler(Object proxied) {
-		super();
-		this.proxied = proxied;
+		super(proxied);
 	}
-	
-	
+
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
 		Class<?> returnClass = method.getReturnType();
 		Object result = method.invoke(proxied, args);
-		if (method.isAnnotationPresent(UseFilter.class) && (proxied instanceof WebSiteCrawler)) {
+		if (result != null && method.isAnnotationPresent(UseFilter.class) && (proxied instanceof WebSiteCrawler)) {
 			WebSiteCrawler crawler = (WebSiteCrawler)proxied;
 			 for(Field field : returnClass.getFields()) {
 				 if (field.isAnnotationPresent(MustFilterField.class)) {
@@ -32,7 +27,7 @@ public class FilterInvocationHandler implements InvocationHandler {
 					 String dst = src;
 					 if (crawler.filterStrings() != null) {
 						 for (String str : crawler.filterStrings()) {
-							 dst = src.replaceAll(str, "");
+							 dst = dst.replaceAll(str, "");
 						 }
 						 field.set(result, dst);
 					 }
