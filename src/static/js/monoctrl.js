@@ -391,6 +391,7 @@ Monocle.Controls.Scrubber = function (reader) {
     }
     var place = p.reader.getPlace();
     var x = placeToPixel(place, p.reader.dom.find(k.CLS.container));
+    var needle, i = 0;
     for (var i = 0, needle; needle = p.reader.dom.find(k.CLS.needle, i); ++i) {
       setX(needle, x - needle.offsetWidth / 2);
       p.reader.dom.find(k.CLS.trail, i).style.width = x + "px";
@@ -453,7 +454,6 @@ Monocle.Controls.Scrubber = function (reader) {
     }
 
     var startFn = function (evt) {
-      evt.stopPropagation();
       bubble.style.display = "block";
       moveEvt(evt);
       cntrListeners = Monocle.Events.listenForContact(
@@ -798,7 +798,7 @@ Monocle.Controls.Stencil = function (reader, behaviorClasses) {
   // Positions the stencil container over the active frame.
   //
   function alignToComponent(pageDiv) {
-    var cmpt = pageDiv.m.activeFrame.parentNode;
+    cmpt = pageDiv.m.activeFrame.parentNode;
     p.container.dom.setStyles({
       left: cmpt.offsetLeft+"px",
       top: cmpt.offsetTop+"px"
@@ -899,32 +899,23 @@ Monocle.Controls.Stencil.Links = function (stencil) {
   //
   API.fitMask = function (link, mask) {
     var hrefObject = deconstructHref(link);
-    var rdr = stencil.properties.reader;
-    var evtData = { href: hrefObject, link: link, mask: mask }
 
-    if (hrefObject.pass) {
-      mask.onclick = function (evt) { return link.click(); }
-    } else {
-      link.onclick = function (evt) {
+    if (hrefObject.internal) {
+      mask.setAttribute('href', 'javascript:"Skip to chapter"');
+      mask.onclick = function (evt) {
+        stencil.properties.reader.skipToChapter(hrefObject.internal);
         evt.preventDefault();
         return false;
       }
-      if (hrefObject.internal) {
-        mask.setAttribute('href', 'javascript:"Skip to chapter"');
-        mask.onclick = function (evt) {
-          if (rdr.dispatchEvent('monocle:link:internal', evtData, true)) {
-            rdr.skipToChapter(hrefObject.internal);
-          }
-          evt.preventDefault();
-          return false;
-        }
-      } else {
-        mask.setAttribute('href', hrefObject.external);
-        mask.setAttribute('target', '_blank');
-        mask.onclick = function (evt) {
-          return rdr.dispatchEvent('monocle:link:external', evtData, true);
-        }
-      }
+    } else {
+      mask.setAttribute('href', hrefObject.external);
+      mask.setAttribute('target', '_blank');
+      mask.onclick = function (evt) { return true; }
+    }
+
+    link.onclick = function (evt) {
+      evt.preventDefault();
+      return false;
     }
   }
 
@@ -952,17 +943,13 @@ Monocle.Controls.Stencil.Links = function (stencil) {
     var path = href.substring(origin.length);
     var ext = { external: href };
 
-    if (href.toLowerCase().match(/^javascript:/)) {
-      return { pass: true };
-    }
-
     // Anchor tags with 'target' attributes are always external URLs.
     if (elem.getAttribute('target')) {
       return ext;
     }
     // URLs with a different protocol or domain are always external.
     //console.log("Domain test: %s <=> %s", origin, href);
-    if (href.indexOf(origin) !== 0) {
+    if (href.indexOf(origin) != 0) {
       return ext;
     }
 
@@ -972,7 +959,7 @@ Monocle.Controls.Stencil.Links = function (stencil) {
       topPath += '/';
     }
     //console.log("Sub-path test: %s <=> %s", topPath, path);
-    if (path.indexOf(topPath) === 0) {
+    if (path.indexOf(topPath) == 0) {
       return { internal: path.substring(topPath.length) }
     }
 
@@ -981,7 +968,7 @@ Monocle.Controls.Stencil.Links = function (stencil) {
     var cmptIds = stencil.properties.reader.getBook().properties.componentIds;
     for (var i = 0, ii = cmptIds.length; i < ii; ++i) {
       //console.log("Component test: %s <=> %s", cmptIds[i], path);
-      if (path.indexOf(cmptIds[i]) === 0) {
+      if (path.indexOf(cmptIds[i]) == 0) {
         return { internal: path }
       }
     }

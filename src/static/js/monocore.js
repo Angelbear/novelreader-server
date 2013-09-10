@@ -70,7 +70,7 @@ Monocle.Env = function () {
     Monocle.defer(removeTestFrame);
 
     if (typeof surveyCallback == "function") {
-      var fn = surveyCallback;
+      fn = surveyCallback;
       surveyCallback = null;
       fn(API);
     }
@@ -278,14 +278,17 @@ Monocle.Env = function () {
     // CHECK OUT OUR CONTEXT
 
     // Does the device have a MobileSafari-style touch interface?
-    // (Here we can now simply follow the wisdom of Gala.)
     //
-    ["touch", function () { result(Gala.Pointers.ENV.noMouse); }],
-
+    ["touch", function () {
+      result(
+        ('ontouchstart' in window) ||
+        css.supportsMediaQueryProperty('touch-enabled')
+      );
+    }],
 
     // Is the Reader embedded, or in the top-level window?
     //
-    ["embedded", function () { result(top != window.self) }],
+    ["embedded", function () { result(top != self) }],
 
 
     // TEST FOR CERTAIN RENDERING OR INTERACTION BUGS
@@ -305,7 +308,7 @@ Monocle.Env = function () {
     //
     ["floatsIgnoreColumns", function () {
       if (!Monocle.Browser.is.WebKit) { return result(false); }
-      var match = navigator.userAgent.match(/AppleWebKit\/([\d\.]+)/);
+      match = navigator.userAgent.match(/AppleWebKit\/([\d\.]+)/);
       if (!match) { return result(false); }
       return result(match[1] < "534.30");
     }],
@@ -459,6 +462,7 @@ Monocle.Env = function () {
     ['loadHTMLWithDocWrite', function () {
       result(Monocle.Browser.is.Gecko || Monocle.Browser.is.Opera);
     }]
+
   ];
 
 
@@ -644,7 +648,7 @@ if (typeof window.console == "undefined") {
 window.console.compatDir = function (obj) {
   var stringify = function (o) {
     var parts = [];
-    for (var x in o) {
+    for (x in o) {
       parts.push(x + ": " + o[x]);
     }
     return parts.join(";\n");
@@ -726,7 +730,6 @@ Monocle.Browser.on = {
   BlackBerry: Monocle.Browser.uaMatch('BlackBerry'),
   Android: (
     Monocle.Browser.uaMatch('Android') ||
-    Monocle.Browser.uaMatch('Silk') ||
     Monocle.Browser.uaMatch(/Linux;.*EBRD/) // Sony Readers
   ),
   MacOSX: (
@@ -844,9 +847,8 @@ Gala.deafen = function (elem, evtType, fn, useCapture) {
 //
 Gala.dispatch = function (elem, evtType, data, cancelable) {
   elem = Gala.$(elem);
-  var evt;
   if (elem.dispatchEvent) {
-    evt = document.createEvent('Events');
+    var evt = document.createEvent('Events');
     evt.initEvent(evtType, false, cancelable || false);
     evt.m = data;
     return elem.dispatchEvent(evt);
@@ -854,7 +856,7 @@ Gala.dispatch = function (elem, evtType, data, cancelable) {
     if (!Gala.IE_REGISTRATIONS[elem]) { return true; }
     var evtHandlers = Gala.IE_REGISTRATIONS[elem][evtType];
     if (!evtHandlers || evtHandlers.length < 1) { return true; }
-    evt = {
+    var evt = {
       type: evtType,
       currentTarget: elem,
       target: elem,
@@ -862,7 +864,7 @@ Gala.dispatch = function (elem, evtType, data, cancelable) {
       defaultPrevented: false,
       preventDefault: function () { evt.defaultPrevented = true; }
     }
-    var q, processQueue = Gala.IE_INVOCATION_QUEUE.length === 0;
+    var q, processQueue = Gala.IE_INVOCATION_QUEUE.length == 0;
     for (var i = 0, ii = evtHandlers.length; i < ii; ++i) {
       q = { elem: elem, evtType: evtType, handler: evtHandlers[i], evt: evt }
       Gala.IE_INVOCATION_QUEUE.push(q);
@@ -897,7 +899,7 @@ Gala.stop = function (evt) {
 // Add a group of listeners, which is just a hash of { evtType: callback, ... }
 //
 Gala.listenGroup = function (elem, listeners, useCapture) {
-  for (var evtType in listeners) {
+  for (evtType in listeners) {
     Gala.listen(elem, evtType, listeners[evtType], useCapture || false);
   }
 }
@@ -906,7 +908,7 @@ Gala.listenGroup = function (elem, listeners, useCapture) {
 // Remove a group of listeners.
 //
 Gala.deafenGroup = function (elem, listeners, useCapture) {
-  for (var evtType in listeners) {
+  for (evtType in listeners) {
     Gala.deafen(elem, evtType, listeners[evtType], useCapture || false);
   }
 }
@@ -917,7 +919,7 @@ Gala.deafenGroup = function (elem, listeners, useCapture) {
 //
 Gala.replaceGroup = function (elem, listeners, newListeners, useCapture) {
   Gala.deafenGroup(elem, listeners, useCapture || false);
-  for (var evtType in listeners) { delete listeners[evtType]; }
+  for (evtType in listeners) { delete listeners[evtType]; }
   for (evtType in newListeners) { listeners[evtType] = newListeners[evtType]; }
   Gala.listenGroup(elem, listeners, useCapture || false);
   return listeners;
@@ -933,55 +935,30 @@ Gala.replaceGroup = function (elem, listeners, newListeners, useCapture) {
 //
 Gala.onTap = function (elem, fn, tapClass) {
   elem = Gala.$(elem);
-  // Throttle the invocation to prevent double firing of the event in envs
-  // that support touch and mouse. Particularly in Firefox and Chrome on IE 8,
-  // a mouse event and touch events are both fired.
-  // Ref https://github.com/joseph/Monocle/pull/216#issuecomment-21424427
-  fn = Gala.throttle(fn, 100);
-
   if (typeof tapClass == 'undefined') { tapClass = Gala.TAPPING_CLASS; }
-
-  var tapStartingCoords = {};
-
-  // If the tap extends beyond a few pixels, it's no longer a tap.
-  var tapIsValid = function (evt) {
-    var cur = Gala.Cursor(evt);
-    var xDelta = Math.abs(cur.pageX - tapStartingCoords.x);
-    var yDelta = Math.abs(cur.pageY - tapStartingCoords.y);
-    var maxContact = Math.max(xDelta, yDelta);
-    return Gala.TAP_MAX_CONTACT_DISTANCE >= maxContact;
-  }
-
-  // This ensures the element is considered 'clickable' by browsers
-  // like on the Kindle 3.
-  var noopOnClick = function (listeners) {
-    Gala.listen(elem, 'click', listeners.click = fns.noop);
-  }
-
+  var tapping = false;
   var fns = {
     start: function (evt) {
-      var cur = Gala.Cursor(evt);
-      tapStartingCoords = { x: cur.pageX, y: cur.pageY };
+      tapping = true;
       if (tapClass) { elem.classList.add(tapClass); }
     },
     move: function (evt) {
-      if (!tapStartingCoords) { return; }
-      if (!tapIsValid(evt)) { fns.cancel(evt); }
+      if (!tapping) { return; }
+      tapping = false;
+      if (tapClass) { elem.classList.remove(tapClass); }
     },
     end: function (evt) {
-      if (!tapStartingCoords) { return; }
-      fns.cancel(evt);
+      if (!tapping) { return; }
+      fns.move(evt);
       evt.currentTarget = evt.currentTarget || evt.srcElement;
       fn(evt);
     },
-    noop: function () {},
-    cancel: function () {
-      if (!tapStartingCoords) { return; }
-      tapStartingCoords = null;
-      if (tapClass) { elem.classList.remove(tapClass); }
-    }
-  };
-  Gala.listen(window, Gala.CONTACT_CANCEL, fns.cancel);
+    noop: function (evt) {}
+  }
+  var noopOnClick = function (listeners) {
+    Gala.listen(elem, 'click', listeners.click = fns.noop);
+  }
+  Gala.listen(window, 'gala:contact:cancel', fns.move);
   return Gala.onContact(elem, fns, false, noopOnClick);
 }
 
@@ -1004,167 +981,90 @@ Gala.onTap = function (elem, fn, tapClass) {
 //
 Gala.onContact = function (elem, fns, useCapture, initCallback) {
   elem = Gala.$(elem);
+  var listeners = null;
+  var inited = false;
 
-  var isLeftClick = function (evt) {
-    return evt[evt.which == 'undefined' ? 'button' : 'which'] < 2;
-  }
-
-  var isSingleTouch = function (evt) {
-    return !!(evt.touches && evt.touches.length < 2);
-  }
-
-  var wrapContact = function (fn) {
-    return function (evt) {
-      if (Gala.Pointers.enabled()) { Gala.Pointers.trackPointers(evt); }
-      var doCallFunc = (Gala.Pointers.isSinglePointer() ||
-        isSingleTouch(evt) ||
-        isLeftClick(evt));
-      if (doCallFunc) { fn(evt); }
-    }
-  }
-
-  var buildListeners = function (opts) {
-    var types = Gala.getEventTypes();
-
-    var listeners = {};
-    var evtTypes = ['start', 'move', 'end', 'cancel'];
-    for (var i = 0, ii = evtTypes.length; i < ii; ++i) {
-      var type = evtTypes[i];
-      if (opts[type]) {
-        var thisEvtTypes = types[type].split(' ');
-        for (var j = 0, jj = thisEvtTypes.length; j < jj; ++j) {
-          listeners[thisEvtTypes[j]] = wrapContact(opts[type]);
-        }
+  // If we see a touchstart event, register all these listeners.
+  var touchListeners = function () {
+    var l = {}
+    if (fns.start) {
+      l.touchstart = function (evt) {
+        if (evt.touches.length <= 1) { fns.start(evt); }
       }
     }
-    return listeners;
+    if (fns.move) {
+      l.touchmove = function (evt) {
+        if (evt.touches.length <= 1) { fns.move(evt); }
+      }
+    }
+    if (fns.end) {
+      l.touchend = function (evt) {
+        if (evt.touches.length <= 1) { fns.end(evt); }
+      }
+    }
+    if (fns.cancel) {
+      l.touchcancel = fns.cancel;
+    }
+    return l;
   }
 
-  var listeners = buildListeners(fns);
+  // Whereas if we see a mousedown event, register all these listeners.
+  var mouseListeners = function () {
+    var l = {};
+    if (fns.start) {
+      l.mousedown = function (evt) { if (evt.button < 2) { fns.start(evt); } }
+    }
+    if (fns.move) {
+      l.mousemove = fns.move;
+    }
+    if (fns.end) {
+      l.mouseup = function (evt) { if (evt.button < 2) { fns.end(evt); } }
+    }
+    // if (fns.cancel) {
+    //   l.mouseout = function (evt) {
+    //     obj = evt.relatedTarget || evt.fromElement;
+    //     while (obj && (obj = obj.parentNode)) { if (obj == elem) { return; } }
+    //     fns.cancel(evt);
+    //   }
+    // }
+    return l;
+  }
+
+  if (typeof Gala.CONTACT_MODE == 'undefined') {
+    var contactInit = function (evt, newListeners, mode) {
+      if (inited) { return; }
+      Gala.CONTACT_MODE = Gala.CONTACT_MODE || mode;
+      if (Gala.CONTACT_MODE != mode) { return; }
+      Gala.replaceGroup(elem, listeners, newListeners, useCapture);
+      if (typeof initCallback == 'function') { initCallback(listeners); }
+      if (listeners[evt.type]) { listeners[evt.type](evt); }
+      inited = true;
+    }
+    var touchInit = function (evt) {
+      contactInit(evt, touchListeners(), 'touch');
+    }
+    var mouseInit = function (evt) {
+      contactInit(evt, mouseListeners(), 'mouse');
+    }
+    listeners = {
+      'touchstart': touchInit,
+      'touchmove': touchInit,
+      'touchend': touchInit,
+      'touchcancel': touchInit,
+      'mousedown': mouseInit,
+      'mousemove': mouseInit,
+      'mouseup': mouseInit,
+      'mouseout': mouseInit
+    }
+  } else if (Gala.CONTACT_MODE == 'touch') {
+    listeners = touchListeners();
+  } else if (Gala.CONTACT_MODE == 'mouse') {
+    listeners = mouseListeners();
+  }
 
   Gala.listenGroup(elem, listeners);
   if (typeof initCallback == 'function') { initCallback(listeners); }
   return listeners;
-}
-
-// Support for pointer events
-// http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx
-// http://www.w3.org/Submission/pointer-events/
-// Primary target of this functionality is windows 8, surface, etc
-//
-Gala.Pointers = {
-  pointers: {},
-
-
-  enabled: function () { return Gala.Pointers.ENV.pointer },
-
-  // Track pointer events
-  //
-  trackPointers: function (evt) {
-    var types = Gala.getEventTypes(),
-    endEvents = types.end.slice().concat(types.cancel);
-
-    // if we have an end event, I'm not sure it makes sense to only clear the
-    // single pointer that sent the end event. I think it makes sense to
-    // clear all pointers...I think it's kind of an edge case.
-    if (endEvents.indexOf(evt.type)) {
-      this.reset();
-    } else {
-      this.pointers[evt.pointerId] = evt;
-    }
-  },
-
-
-  // This follows the same logic as touches. To be valid, there
-  // is less than two.
-  //
-  isSinglePointer: function () {
-    return !!(this.enabled() && this.count() < 2);
-  },
-
-
-  // Get count of currently tracked pointers
-  //
-  count: function () {
-    // This method only exists in IE > 8 but that's ok because this code only
-    // applies to versions of IE > 8;
-    return Object.keys ? Object.keys(this.pointers).length : 0;
-  },
-
-
-  // Reset the pointers
-  //
-  reset: function () {
-    this.pointers = {};
-  }
-}
-
-Gala.Pointers.ENV = {
-  // Is the Pointer Events specification implemented?
-  // http://www.w3.org/Submission/pointer-events/
-  // Not sure how I feel about this spec but it makes sense to unify
-  // the events into a single interface to be used as needed. - DS
-  //
-  pointer: (function () {
-    return !!(navigator.pointerEnabled || navigator.msPointerEnabled)
-  })(),
-
-
-  // Does the system support a mouse
-  // This is required to identify touch devices that do not support
-  // a mouse interface. This is used because mouse events are still fired
-  // from mobile devices.
-  //
-  // This may need updated when Android desktops come out but hopefully
-  // everyone will just adopt the pointer spec.
-  //
-  noMouse: (function () {
-    var mobileRegex = /mobile|tablet|ip(ad|hone|od)|android|silk/i;
-    return (
-      ('ontouchstart' in window) &&
-      !!navigator.userAgent.match(mobileRegex)
-    );
-  })()
-}
-
-// Get Event Types that are used to bind the different event concepts
-// start, move, end, cancel. This method helps normalize event binding and
-// prevent improper event listening, etc
-//
-Gala.getEventTypes = function () {
-  var types;
-
-  if (Gala.Pointers.enabled()) {
-    // Microsoft screwing stuff up with pointers
-    // http://www.w3.org/TR/pointerevents/
-    types = [
-      'pointerdown MSPointerDown',
-      'pointermove MSPointerMove',
-      'pointerup MSPointerUp',
-      'pointercancel MSPointerCancel'
-    ];
-  } else if (Gala.Pointers.ENV.noMouse) {
-    types = [
-      'touchstart',
-      'touchmove',
-      'touchend',
-      'touchcancel'
-    ];
-  } else {
-    types = [
-      'touchstart mousedown',
-      'touchmove mousemove',
-      'touchend mouseup',
-      'touchcancel'
-    ];
-  }
-
-  return {
-    start: types[0],
-    move: types[1],
-    end: types[2],
-    cancel: types[3]
-  };
 }
 
 
@@ -1182,7 +1082,7 @@ Gala.Cursor = function (evt) {
 
   function initialize() {
     var ci =
-      evt.type.match(/mouse|pointer/i) ? evt :
+      evt.type.indexOf('mouse') == 0 ? evt :
       ['touchstart', 'touchmove'].indexOf(evt.type) >= 0 ? evt.targetTouches[0] :
       ['touchend', 'touchcancel'].indexOf(evt.type) >= 0 ? evt.changedTouches[0] :
       null;
@@ -1194,7 +1094,6 @@ Gala.Cursor = function (evt) {
     API.clientY = ci.clientY;
     API.screenX = ci.screenX;
     API.screenY = ci.screenY;
-    API.event = evt;
 
     // Coordinates relative to the target element for the event.
     var tgt = API.target = evt.target || evt.srcElement;
@@ -1242,29 +1141,14 @@ Gala.$ = function (elem) {
   return elem;
 }
 
-Gala.throttle = function (func, wait) {
-  var previous = 0;
-
-  return function () {
-    var now = new Date();
-    var remaining = wait - (now - previous);
-    if (remaining <= 0) {
-      previous = now;
-      func.apply(this, arguments);
-    }
-  }
-}
-
-
 
 
 // CONSTANTS
 //
 Gala.TAPPING_CLASS = 'tapping';
-Gala.IE_REGISTRATIONS = {};
-Gala.IE_INVOCATION_QUEUE = [];
-Gala.CONTACT_CANCEL = "gala:contact:cancel";
-Gala.TAP_MAX_CONTACT_DISTANCE = 10;
+Gala.IE_REGISTRATIONS = {}
+Gala.IE_INVOCATION_QUEUE = []
+;
 // A shortcut for creating a bookdata object from a 'data' hash.
 //
 // eg:
@@ -1398,7 +1282,7 @@ Monocle.Factory = function (element, label, index, reader) {
   //
   // Returns the created element.
   //
-  function make(tagName, oLabel, indexOrOptions, orOptions) {
+  function make(tagName, oLabel, index_or_options, or_options) {
     var oIndex, options;
     if (arguments.length == 1) {
       oLabel = null,
@@ -1440,7 +1324,7 @@ Monocle.Factory = function (element, label, index, reader) {
   // Creates an element by passing all the given arguments to make. Then
   // appends the element as a child of the current element.
   //
-  function append(tagName, oLabel, indexOrOptions, orOptions) {
+  function append(tagName, oLabel, index_or_options, or_options) {
     var oElement = make.apply(this, arguments);
     p.element.appendChild(oElement);
     return oElement;
@@ -1548,7 +1432,7 @@ Monocle.Events.deafenForTap = Gala.deafenGroup;
 Monocle.Events.listenForContact = function (elem, fns, options) {
   options = options || { useCapture: false };
   var wrappers = {};
-  for (var evtType in fns) {
+  for (evtType in fns) {
     wrappers[evtType] = Monocle.Events.wrapper(fns[evtType]);
   }
   return Gala.onContact(elem, wrappers, options.useCapture);
@@ -1645,7 +1529,7 @@ Monocle.Styles = {
     while (props.length && !matrix) {
       matrix = currStyle[props.shift()];
     }
-    return parseInt(matrix.match(re)[1], 10);
+    return parseInt(matrix.match(re)[1]);
   },
 
 
@@ -1784,12 +1668,12 @@ Monocle.Formatting = function (reader, optStyles, optScale) {
   /* PAGE STYLESHEETS */
 
   // API for adding a new stylesheet to all components. styleRules should be
-  // a string of CSS rules.
+  // a string of CSS rules. restorePlace defaults to true.
   //
   // Returns a sheet index value that can be used with updatePageStyles
   // and removePageStyles.
   //
-  function addPageStyles(styleRules) {
+  function addPageStyles(styleRules, restorePlace) {
     return changingStylesheet(function () {
       p.stylesheets.push(styleRules);
       var sheetIndex = p.stylesheets.length - 1;
@@ -1799,14 +1683,14 @@ Monocle.Formatting = function (reader, optStyles, optScale) {
         addPageStylesheet(cmpt.contentDocument, sheetIndex);
       }
       return sheetIndex;
-    });
+    }, restorePlace);
   }
 
 
   // API for updating the styleRules in an existing page stylesheet across
   // all components. Takes a sheet index value obtained via addPageStyles.
   //
-  function updatePageStyles(sheetIndex, styleRules) {
+  function updatePageStyles(sheetIndex, styleRules, restorePlace) {
     return changingStylesheet(function () {
       p.stylesheets[sheetIndex] = styleRules;
       if (typeof styleRules.join == "function") {
@@ -1830,14 +1714,14 @@ Monocle.Formatting = function (reader, optStyles, optScale) {
           );
         }
       }
-    });
+    }, restorePlace);
   }
 
 
   // API for removing a page stylesheet from all components. Takes a sheet
   // index value obtained via addPageStyles.
   //
-  function removePageStyles(sheetIndex) {
+  function removePageStyles(sheetIndex, restorePlace) {
     return changingStylesheet(function () {
       p.stylesheets[sheetIndex] = null;
       var i = 0, cmpt = null;
@@ -1846,7 +1730,7 @@ Monocle.Formatting = function (reader, optStyles, optScale) {
         var styleTag = doc.getElementById('monStylesheet'+sheetIndex);
         styleTag.parentNode.removeChild(styleTag);
       }
-    });
+    }, restorePlace);
   }
 
 
@@ -1854,10 +1738,18 @@ Monocle.Formatting = function (reader, optStyles, optScale) {
   // brace of custom events (stylesheetchanging/stylesheetchange), and
   // recalculates component dimensions if specified (default to true).
   //
-  function changingStylesheet(callback) {
-    dispatchChanging();
+  function changingStylesheet(callback, restorePlace) {
+    restorePlace = (restorePlace === false) ? false : true;
+    if (restorePlace) {
+      dispatchChanging();
+    }
     var result = callback();
-    p.reader.recalculateDimensions(true, dispatchChange);
+    if (restorePlace) {
+      p.reader.recalculateDimensions(true);
+      Monocle.defer(dispatchChange);
+    } else {
+      p.reader.recalculateDimensions(false);
+    }
     return result;
   }
 
@@ -1913,89 +1805,78 @@ Monocle.Formatting = function (reader, optStyles, optScale) {
 
   /* FONT SCALING */
 
-  function setFontScale(scale) {
+  function setFontScale(scale, restorePlace) {
     p.fontScale = scale;
-    dispatchChanging();
+    if (restorePlace) {
+      dispatchChanging();
+    }
     var i = 0, cmpt = null;
     while (cmpt = p.reader.dom.find('component', i++)) {
       adjustFontScaleForDoc(cmpt.contentDocument, scale);
     }
-    p.reader.recalculateDimensions(true, dispatchChange);
+    if (restorePlace) {
+      p.reader.recalculateDimensions(true);
+      dispatchChange();
+    } else {
+      p.reader.recalculateDimensions(false);
+    }
   }
 
 
   function adjustFontScaleForDoc(doc, scale) {
+    var elems = doc.getElementsByTagName('*');
     if (scale) {
+      scale = parseFloat(scale);
       if (!doc.body.pfsSwept) {
-        sweepElements(doc);
+        sweepElements(doc, elems);
       }
-      var evtData = { document: doc, scale: parseFloat(scale) };
-      p.reader.dispatchEvent('monocle:fontscaling', evtData);
-      scale = evtData.scale;
 
       // Iterate over each element, applying scale to the original
       // font-size. If a proportional font sizing is already applied to
       // the element, update existing cssText, otherwise append new cssText.
-      walkTree(doc.body, function (elem) {
-        var newFs = fsProperty(Math.round(elem.pfsOriginal*scale));
-        if (elem.pfsApplied) {
-          replaceFontSizeInStyle(elem, newFs);
+      //
+      for (var j = 0, jj = elems.length; j < jj; ++j) {
+        var newFs = fsProperty(elems[j].pfsOriginal, scale);
+        if (elems[j].pfsApplied) {
+          replaceFontSizeInStyle(elems[j], newFs);
         } else {
-          elem.style.cssText += newFs;
+          elems[j].style.cssText += newFs;
         }
-        elem.pfsApplied = scale;
-      });
-
-      p.reader.dispatchEvent('monocle:fontscale', evtData);
-    } else if (doc.body.pfsApplied) {
-      var evtData = { document: doc, scale: null };
-      p.reader.dispatchEvent('monocle:fontscaling', evtData);
-
+        elems[j].pfsApplied = scale;
+      }
+    } else if (doc.body.pfsSwept) {
       // Iterate over each element, removing proportional font-sizing flag
       // and property from cssText.
-      walkTree(doc.body, function (elem) {
-        if (elem.pfsApplied) {
-          var oprop = elem.pfsOriginalProp;
+      for (var j = 0, jj = elems.length; j < jj; ++j) {
+        if (elems[j].pfsApplied) {
+          var oprop = elems[j].pfsOriginalProp;
           var opropDec = oprop ? 'font-size: '+oprop+' ! important;' : '';
-          replaceFontSizeInStyle(elem, opropDec);
-          elem.pfsApplied = null;
+          replaceFontSizeInStyle(elems[j], opropDec);
+          elems[j].pfsApplied = null;
         }
-      });
+      }
 
       // Establish new baselines in case classes have changed.
-      sweepElements(doc);
-
-      p.reader.dispatchEvent('monocle:fontscale', evtData);
+      sweepElements(doc, elems);
     }
   }
 
 
-  function sweepElements(doc) {
+  function sweepElements(doc, elems) {
     // Iterate over each element, looking at its font size and storing
     // the original value against the element.
-    walkTree(doc.body, function (elem) {
-      var currStyle = doc.defaultView.getComputedStyle(elem, null);
+    for (var i = 0, ii = elems.length; i < ii; ++i) {
+      var currStyle = doc.defaultView.getComputedStyle(elems[i], null);
       var fs = parseFloat(currStyle.getPropertyValue('font-size'));
-      elem.pfsOriginal = fs;
-      elem.pfsOriginalProp = elem.style.fontSize;
-    });
+      elems[i].pfsOriginal = fs;
+      elems[i].pfsOriginalProp = elems[i].style.fontSize;
+    }
     doc.body.pfsSwept = true;
   }
 
 
-  function walkTree(node, fn) {
-    if (node.nodeType != 1) { return; }
-    fn(node);
-    node = node.firstChild;
-    while (node) {
-      walkTree(node, fn);
-      node = node.nextSibling;
-    }
-  }
-
-
-  function fsProperty(fsInPixels) {
-    return 'font-size: '+fsInPixels+'px ! important;';
+  function fsProperty(orig, scale) {
+    return 'font-size: '+(orig*scale)+'px ! important;';
   }
 
 
@@ -2031,12 +1912,6 @@ Monocle.Formatting.DEFAULT_STYLE_RULES = [
     "width: 100% !important;" +
     "position: absolute !important;" +
     "-webkit-text-size-adjust: none;" +
-    "-ms-touch-action: none;" +
-    "-ms-content-zooming: none;" +
-    "-ms-content-zoom-chaining: chained;" +
-    "-ms-content-zoom-limit-min: 100%;" +
-    "-ms-content-zoom-limit-max: 100%;" +
-    "-ms-touch-select: none;" +
   "}",
   "html#RS\\:monocle body * {" +
     "max-width: 100% !important;" +
@@ -2044,8 +1919,7 @@ Monocle.Formatting.DEFAULT_STYLE_RULES = [
   "html#RS\\:monocle img, html#RS\\:monocle video, html#RS\\:monocle object, html#RS\\:monocle svg {" +
     "max-height: 95% !important;" +
     "height: auto !important;" +
-  "}",
-  "a:not([href]) { color: inherit; }"
+  "}"
 ]
 ;
 // READER
@@ -2170,8 +2044,6 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
       options.stylesheet,
       options.fontScale
     );
-
-    listen('monocle:turn', onPageTurn);
 
     primeFrames(options.primeURL, function () {
       // Make the reader elements look pretty.
@@ -2315,7 +2187,7 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
       var listener = function (evt) {
         if (watchers[evt.type](evt)) { deafen(evt.type, listener); }
       }
-      for (var evtType in watchers) { listen(evtType, listener) }
+      for (evtType in watchers) { listen(evtType, listener) }
     }
     p.flipper.moveTo(place || { page: 1 }, initialized);
   }
@@ -2363,48 +2235,23 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
 
   function recalculateDimensions(andRestorePlace, callback) {
     if (!p.book) { return; }
-    if (p.onRecalculate) {
-      var oldFn = p.onRecalculate;
-      p.onRecalculate = function () {
-        oldFn();
-        if (typeof callback == 'function') { callback(); }
-      }
-      return;
-    }
-
     dispatchEvent("monocle:recalculating");
-    p.onRecalculate = function () {
-      if (typeof callback == 'function') { callback(); }
-      p.onRecalculate = null;
-      dispatchEvent("monocle:recalculated");
-    }
 
-    var onComplete = function () { Monocle.defer(p.onRecalculate); }
-    var onInitiate = onComplete;
-    if (andRestorePlace !== false && p.lastLocus) {
-      onInitiate = function () {
-        p.flipper.moveTo(p.lastLocus, onComplete, false);
-      }
+    var place, locus;
+    if (andRestorePlace !== false) {
+      var place = getPlace();
+      var locus = { percent: place ? place.percentageThrough() : 0 };
     }
 
     forEachPage(function (pageDiv) {
       pageDiv.m.activeFrame.m.component.updateDimensions(pageDiv);
     });
 
-    Monocle.defer(onInitiate);
-  }
-
-
-  function onPageTurn(evt) {
-    if (p.onRecalculate) {
-    } else {
-      var place = getPlace();
-      p.lastLocus = {
-        componentId: place.componentId(),
-        percent: place.percentageThrough()
-      }
-      BIF.dispatch('monocle:position', { place: place });
+    var cb = function () {
+      dispatchEvent("monocle:recalculated");
+      Monocle.defer(callback);
     }
+    Monocle.defer(function () { locus ? p.flipper.moveTo(locus, cb) : cb; });
   }
 
 
@@ -2451,7 +2298,6 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
     }
     var fn = callback;
     if (!locus.direction) {
-      dispatchEvent('monocle:turning');
       dispatchEvent('monocle:jumping', { locus: locus });
       fn = function () {
         dispatchEvent('monocle:jump', { locus: locus });
@@ -2590,9 +2436,8 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
     }
 
     var overlay = dom.find('overlay');
-    var i, ii;
     if (controlData.usesOverlay && controlData.controlType != "hud") {
-      for (i = 0, ii = p.controls.length; i < ii; ++i) {
+      for (var i = 0, ii = p.controls.length; i < ii; ++i) {
         if (p.controls[i].usesOverlay && !p.controls[i].hidden) {
           return false;
         }
@@ -2601,24 +2446,25 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
       dispatchEvent('monocle:modal:on');
     }
 
-    for (i = 0; i < controlData.elements.length; ++i) {
+    for (var i = 0; i < controlData.elements.length; ++i) {
       controlData.elements[i].style.display = "block";
     }
 
     if (controlData.controlType == "popover") {
-      var beyondControl = function (evt) {
+      var onControl = function (evt) {
         var obj = evt.target;
         do {
-          if (obj == controlData.elements[0]) { return false; }
+          if (obj == controlData.elements[0]) { return true; }
         } while (obj && (obj = obj.parentNode));
-        Gala.stop(evt);
-        return true;
+        return false;
       }
-      var handlers = {
-        start: function (e) { if (beyondControl(e)) { hideControl(ctrl); } },
-        move: beyondControl
-      }
-      overlay.listeners = Monocle.Events.listenForContact(overlay, handlers);
+      overlay.listeners = Monocle.Events.listenForContact(
+        overlay,
+        {
+          start: function (evt) { if (!onControl(evt)) { hideControl(ctrl); } },
+          move: function (evt) { if (!onControl(evt)) { evt.preventDefault(); } }
+        }
+      );
     }
     controlData.hidden = false;
     if (ctrl.properties) {
@@ -2631,7 +2477,7 @@ Monocle.Reader = function (node, bookData, options, onLoadCallback) {
 
   function showingControl(ctrl) {
     var controlData = dataForControl(ctrl);
-    return controlData.hidden === false;
+    return controlData.hidden == false;
   }
 
 
@@ -2834,7 +2680,7 @@ Monocle.Book = function (dataSource, preloadWindow) {
     var result = { load: false, componentId: locus.componentId, page: 1 }
 
     // Get the current last page.
-    var lastPageNum = component.lastPageNumber();
+    lastPageNum = component.lastPageNumber();
 
     // Deduce the page number for the given locus.
     if (typeof(locus.page) == "number") {
@@ -2868,7 +2714,7 @@ Monocle.Book = function (dataSource, preloadWindow) {
     }
 
     if (result.page < 1) {
-      if (cIndex === 0) {
+      if (cIndex == 0) {
         // On first page of book.
         result.page = 1;
         result.boundarystart = true;
@@ -2916,7 +2762,7 @@ Monocle.Book = function (dataSource, preloadWindow) {
         pageDiv.m.place = pageDiv.m.place || new Monocle.Place();
         pageDiv.m.place.setPlace(component, locus.page);
 
-        evtData = {
+        var evtData = {
           page: pageDiv,
           locus: locus,
           pageNumber: pageDiv.m.place.pageNumber(),
@@ -3235,19 +3081,27 @@ Monocle.Place = function () {
   // 0 - start of book. 1.0 - end of book.
   //
   function percentAtTopOfPage() {
-    return p.percent - pageSizePercentage();
+    if (k.PAGE_ANCHOR == 'bottom') {
+      return p.percent - 1.0 / p.component.lastPageNumber();
+    } else {
+      return p.percent;
+    }
+  }
+
+
+  function percentOnPage() {
+    return percentAtTopOfPage() + k.PAGE_ANCHOR_OFFSET / pagesInComponent();
   }
 
 
   // How far we are through the component at the "bottom of the page".
   //
   function percentAtBottomOfPage() {
-    return p.percent;
-  }
-
-
-  function pageSizePercentage() {
-    return 1.0 / p.component.lastPageNumber();
+    if (k.PAGE_ANCHOR == 'bottom') {
+      return p.percent;
+    } else {
+      return p.percent + 1.0 / p.component.lastPageNumber();
+    }
   }
 
 
@@ -3256,8 +3110,7 @@ Monocle.Place = function () {
   function pageAtPercentageThrough(percent) {
     var pages = pagesInComponent();
     if (typeof percent != 'number') { percent = 0; }
-    // We round after 4 decimal places because 25*0.8 = 7.000000000000001.
-    return Math.max(Math.ceil(Math.round(pages * percent * 1000) / 1000), 1);
+    return Math.max(Math.round(pages * percent), 1);
   }
 
 
@@ -3337,7 +3190,7 @@ Monocle.Place = function () {
 
 
   function onFirstPageOfBook() {
-    return p.component.properties.index === 0 && pageNumber() === 1;
+    return p.component.properties.index == 0 && pageNumber() == 1;
   }
 
 
@@ -3354,9 +3207,8 @@ Monocle.Place = function () {
   API.setPercentageThrough = setPercentageThrough;
   API.componentId = componentId;
   API.percentAtTopOfPage = percentAtTopOfPage;
+  API.percentOnPage = percentOnPage;
   API.percentAtBottomOfPage = percentAtBottomOfPage;
-  API.percentageThrough = percentAtBottomOfPage;
-  API.pageSizePercentage = pageSizePercentage;
   API.pageAtPercentageThrough = pageAtPercentageThrough;
   API.pageNumber = pageNumber;
   API.pagesInComponent = pagesInComponent;
@@ -3368,8 +3220,18 @@ Monocle.Place = function () {
   API.onFirstPageOfBook = onFirstPageOfBook;
   API.onLastPageOfBook = onLastPageOfBook;
 
+  API.percentageThrough = k.PAGE_ANCHOR == 'bottom' ? percentAtBottomOfPage :
+    k.PAGE_ANCHOR == 'offset' ? percentOnPage :
+    percentAtTopOfPage;
+
   return API;
 }
+
+
+// Can set this to 'top', 'offset' or 'bottom'. Old Monocle behaviour is 'bottom'.
+//
+Monocle.Place.PAGE_ANCHOR = 'offset';
+Monocle.Place.PAGE_ANCHOR_OFFSET = 0.1;
 
 
 Monocle.Place.FromPageNumber = function (component, pageNumber) {
@@ -3619,7 +3481,7 @@ Monocle.Component = function (book, id, index, chapters, source) {
   function updateDimensions(pageDiv, callback) {
     pageDiv.m.dimensions.update(function (pageLength) {
       p.pageLength = pageLength;
-      if (typeof callback == "function") { callback() }
+      if (typeof callback == "function") { callback() };
     });
   }
 
@@ -3768,9 +3630,8 @@ Monocle.Component = function (book, id, index, chapters, source) {
       p.source = { html: srcs.join('') };
     }
 
-    var baseURI;
     if (p.source.html && !p.source.html.match(new RegExp("<base\s.+>", "im"))) {
-      baseURI = computeBaseURI(reader);
+      var baseURI = computeBaseURI(reader);
       if (baseURI) {
         p.source.html = p.source.html.replace(
           new RegExp("(<head[^>]*>)", "im"),
@@ -3781,7 +3642,7 @@ Monocle.Component = function (book, id, index, chapters, source) {
 
     if (p.source.doc && !p.source.doc.querySelector('base')) {
       var srcHead = p.source.doc.querySelector('head') || p.source.doc.body;
-      baseURI = computeBaseURI(reader);
+      var baseURI = computeBaseURI(reader);
       if (srcHead && baseURI) {
         var srcBase = p.source.doc.createElement('base');
         srcBase.setAttribute('href', baseURI);
@@ -3802,7 +3663,7 @@ Monocle.Component = function (book, id, index, chapters, source) {
   function absoluteURL(url) {
     var link = document.createElement('a');
     link.setAttribute('href', url);
-    var result = link.href;
+    result = link.href;
     delete(link);
     return result;
   }
@@ -3940,7 +3801,6 @@ Monocle.Selection = function (reader) {
       return elem;
     }
 
-    var nvp;
     if (ovp) {
       var ovpcontent = ovp.getAttribute('content');
       var re = /user-scalable\s*=\s*([^,$\s])*/;
@@ -3952,13 +3812,13 @@ Monocle.Selection = function (reader) {
         nvpcontent += nvpcontent ? ', ' : '';
         nvpcontent += 'user-scalable=no';
         head.removeChild(ovp);
-        nvp = createViewportMeta(nvpcontent);
+        var nvp = createViewportMeta(nvpcontent);
         fn();
         head.removeChild(nvp);
         head.appendChild(ovp);
       }
     } else {
-      nvp = createViewportMeta('user-scalable=no');
+      var nvp = createViewportMeta('user-scalable=no');
       fn();
       nvp.setAttribute('content', 'user-scalable=yes');
     }
@@ -3993,7 +3853,7 @@ Monocle.Billboard = function (reader) {
     p.reader.dispatchEvent('monocle:modal:on');
     if (p.cntr) { return console.warn("Modal billboard already showing."); }
 
-    options = options || {};
+    var options = options || {};
     var elem = urlOrElement;
     p.cntr = reader.dom.append('div', k.CLS.cntr);
     if (typeof urlOrElement == 'string') {
@@ -4008,7 +3868,7 @@ Monocle.Billboard = function (reader) {
       elem.naturalWidth || elem.offsetWidth,
       elem.naturalHeight || elem.offsetHeight
     ];
-    if (options.closeButton !== false) {
+    if (options.closeButton != false) {
       var cBtn = p.cntr.dom.append('div', k.CLS.closeButton);
       Monocle.Events.listenForTap(cBtn, hide);
     }
@@ -4027,20 +3887,20 @@ Monocle.Billboard = function (reader) {
 
 
   function grow() {
-    Monocle.Styles.transitionFor(p.cntr, 'transform', k.ANIM_MS, 'ease-in-out');
+    Monocle.Styles.transitionFor(p.cntr, 'transform', k.ANIM_MS, 'ease-in');
     Monocle.Styles.affix(p.cntr, 'transform', 'translate(0, 0) scale(1)');
   }
 
 
   function shrink(from) {
     p.from = from || p.from || [0,0];
-    var translate = 'translate('+p.from[0]+'px, '+p.from[1]+'px)';
-    var scale = 'scale(0)';
-    if (typeof p.from[2] === 'number') {
-      scale = 'scaleX('+(p.from[2] / p.cntr.offsetWidth)+') ';
-      scale += 'scaleY('+(p.from[3] / p.cntr.offsetHeight)+')';
-    }
-    Monocle.Styles.affix(p.cntr, 'transform', translate+' '+scale);
+    var x = p.from[0]+'px';
+    var y = p.from[1]+'px';
+    Monocle.Styles.affix(
+      p.cntr,
+      'transform',
+      'translate('+x+','+y+') scale(0)'
+    );
   }
 
 
@@ -4066,14 +3926,14 @@ Monocle.Billboard = function (reader) {
     var w = (p.inner.scrollWidth - p.inner.offsetWidth);
     var h = (p.inner.scrollHeight - p.inner.offsetHeight);
     if (s[0].match(/^\d+$/)) {
-      l = Math.max(0, parseInt(s[0], 10) - (p.inner.offsetWidth / 2));
+      l = Math.max(0, parseInt(s[0]) - (p.inner.offsetWidth / 2));
     } else if (s[0] == 'center') {
       l = w / 2;
     } else if (s[0] == 'right') {
       l = w;
     }
     if (s[1] && s[1].match(/^\d+$/)) {
-      t = Math.max(0, parseInt(s[1], 10) - (p.inner.offsetHeight / 2));
+      t = Math.max(0, parseInt(s[1]) - (p.inner.offsetHeight / 2));
     } else if (!s[1] || s[1] == 'center') {
       t =  h / 2;
     } else if (s[1] == 'bottom') {
@@ -4254,7 +4114,7 @@ Monocle.Panels.TwoPane = function (flipper, evtCallbacks) {
       backwards: new Monocle.Controls.Panel()
     }
 
-    for (var dir in p.panels) {
+    for (dir in p.panels) {
       flipper.properties.reader.addControl(p.panels[dir]);
       p.panels[dir].listenTo(evtCallbacks);
       p.panels[dir].setDirection(flipper.constants[dir.toUpperCase()]);
@@ -4294,7 +4154,7 @@ Monocle.Panels.IMode = function (flipper, evtCallbacks) {
     }
     p.divs = {}
 
-    for (var dir in p.panels) {
+    for (dir in p.panels) {
       p.reader.addControl(p.panels[dir]);
       p.divs[dir] = p.panels[dir].properties.div;
       p.panels[dir].listenTo(evtCallbacks);
@@ -4532,13 +4392,13 @@ Monocle.Panels.Marginal = function (flipper, evtCallbacks) {
       backwards: new Monocle.Controls.Panel()
     }
 
-    for (var dir in p.panels) {
+    for (dir in p.panels) {
       flipper.properties.reader.addControl(p.panels[dir]);
       p.panels[dir].listenTo(evtCallbacks);
       p.panels[dir].setDirection(flipper.constants[dir.toUpperCase()]);
-
-      var prop = dir == "forwards" ? "right" : "left";
-      p.panels[dir].properties.div.style[prop] = 0
+      with (p.panels[dir].properties.div.style) {
+        dir == "forwards" ? right = 0 : left = 0;
+      }
     }
     setWidths();
   }
@@ -5007,23 +4867,21 @@ Monocle.Dimensions.Columns = function (pageDiv) {
       translateToOffset(0);
 
       // Store scroll offsets for all windows.
-      var win, s;
-      win = s = p.page.m.activeFrame.contentWindow;
+      var win = s = p.page.m.activeFrame.contentWindow;
       var scrollers = [
         [win, win.scrollX, win.scrollY],
         [window, window.scrollX, window.scrollY]
       ];
       //while (s != s.parent) { scrollers.push([s, s.scrollX]); s = s.parent; }
 
-      var scroller, x;
       if (Monocle.Browser.env.sheafIsScroller) {
-        scroller = p.page.m.sheafDiv;
-        x = scroller.scrollLeft;
+        var scroller = p.page.m.sheafDiv;
+        var x = scroller.scrollLeft;
         target.scrollIntoView();
         offset = scroller.scrollLeft;
       } else {
-        scroller = win;
-        x = scroller.scrollX;
+        var scroller = win;
+        var x = scroller.scrollX;
         target.scrollIntoView();
         offset = scroller.scrollX;
       }
@@ -5283,7 +5141,7 @@ Monocle.Flippers.Slider = function (reader) {
 
 
   function onGoingForward(x) {
-    if (p.nextPageReady === false) {
+    if (p.nextPageReady == false) {
       prepareNextPage(function () { lifted(x); }, resetTurnData);
     } else {
       lifted(x);
@@ -5402,7 +5260,7 @@ Monocle.Flippers.Slider = function (reader) {
     if (!options.duration) {
       duration = 0;
     } else {
-      duration = parseInt(options.duration, 10);
+      duration = parseInt(options.duration);
     }
 
     if (Monocle.Browser.env.supportsTransition) {
@@ -5461,7 +5319,7 @@ Monocle.Flippers.Slider = function (reader) {
 
 
   function jumpIn(pageDiv, callback) {
-    var opts = { duration: (Monocle.Browser.env.stickySlideOut ? 1 : 0) }
+    opts = { duration: (Monocle.Browser.env.stickySlideOut ? 1 : 0) }
     setX(pageDiv, 0, opts, callback);
   }
 
@@ -5554,7 +5412,7 @@ Monocle.Flippers.Scroller = function (reader, setPageFn) {
   var k = API.constants = API.constructor;
   var p = API.properties = {
     pageCount: 1,
-    duration: k.speed
+    duration: 300
   }
 
 
@@ -5671,7 +5529,7 @@ Monocle.Flippers.Scroller = function (reader, setPageFn) {
   return API;
 }
 
-Monocle.Flippers.Scroller.speed = 300; // How long the animation takes
+Monocle.Flippers.Scroller.speed = 200; // How long the animation takes
 Monocle.Flippers.Scroller.rate = 20; // frame-rate of the animation
 Monocle.Flippers.Scroller.FORWARDS = 1;
 Monocle.Flippers.Scroller.BACKWARDS = -1;
