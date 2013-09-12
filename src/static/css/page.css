@@ -108,8 +108,16 @@ body {
 	padding: 3% 2%;
 }
 
+
+li.monelem_controls_contents_chapter {
+	font-family: 宋体, 新细明体, Verdana, Arial, sans-serif;
+}
+
 .bookTitle {
 	top: 1em;
+	margin-left: 33%;
+	margin-right: 33%;
+	font-size: 20px;
 	padding-top: 1em;
     text-align : center;
 	cursor: pointer;
@@ -141,7 +149,7 @@ body {
 	background-color: #000;
 }
 
-#toc ul.root {
+#reader ul.root {
 	position: absolute;
 	top: 50px;
 	left: 8%;
@@ -172,7 +180,7 @@ body {
 	z-index: 8;
 }
 
-#toc li {
+#reader li {
 	list-style: none;
 	line-height: 220%;
 	padding-left: 1em;
@@ -181,20 +189,20 @@ body {
 	cursor: pointer;
 }
 
-#toc li span {
+#reader li span {
 	display: block;
 }
 
-#toc ul li:last-child {
+#reader ul li:last-child {
 	border-bottom: none;
 }
 
-#toc ul {
+#reader ul {
 	margin: 0;
 	padding: 0;
 }
 
-#toc ul.root {
+#reader ul.root {
 	border-top: none;
 }
 
@@ -244,9 +252,7 @@ div.monelem_controls_magnifier_button {
 div.monelem_controls_contents_container {
 	background: #E0D3C0;
 	border: 1px solid #EED;
-	font: 11pt Georgia, serif;
 	color: #432;
-	text-shadow: 1px 1px #FFF6E0;
 }
 
 div.monelem_controls_contents_chapter {
@@ -277,4 +283,8 @@ div.monelem_controls_scrubber_needle {
 
 div.monelem_controls_scrubber_trail {
 	background: #E0D3C0;
+}
+
+.textData {
+	display: none;
 }

@@ -12,15 +12,20 @@
 <link href="/static/css/page.css" rel="stylesheet" type="text/css" />
 <script src="/static/js/monocore.js"></script>
 <script src="/static/js/monoctrl.js"></script>
-<style type="text/css">
-.textData {
-	display: none;
-}
-</style>
+<script src="/static/js/threepane.js"></script>
+<link rel="apple-touch-icon" href="${book.img}" />
+<meta name="apple-mobile-web-app-title" content="${book.name}">
+<title>${book.name}</title>
 <script type="text/javascript">
       Monocle.DEBUG = true;
 
       Monocle.Styles.container.right = "24px";
+
+      jQuery.fn.outerHTML = function(s) {
+    	    return s
+    	        ? this.before(s).remove()
+    	        : jQuery("<p>").append(this.eq(0).clone()).html();
+    	};
       
       var bookData = {
         getComponents: function () {
@@ -84,30 +89,47 @@
 
       function load_section(section_id, force_update, callback) {
     	  force_update = force_update || 0;
-    	  callback = callback || function (fetched) {};
     	  var need_sync = 0;
     	  if ($("#section-" + section_id).length > 0) {
     		  if ($("#section-" + section_id).attr('sync') == '0') {
     			  need_sync = 1;
         	  }
           }
-    	  if (need_sync == 1 || force_update == 1) {
-        	  console.log(section_id);
-	    	   $.getJSON("/view/section?section_id="+ section_id, function(data) {
-	                var section = data;
-	                var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
-	                if ($("#section-" + section_id).length == 0) {
-	                	 var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
-	                	 $('#section-data div:last').after(html);
-	                } else {
-	                	 var html = "<h3>" + section.title + "</h3><p>" + section.text + "</p>";
-	                	 $("#section-" + section_id).attr('sync', '1');
-	             	     $("#section-" + section_id).html(html);
-	                }
-	                callback(true);
-	            });
+    	  if (need_sync == 1) {
+        	  var stored_data = null;
+        	  if (localStorage["book-"+${book.id}+"-section-"+section_id] != null) {
+     		    stored_data = $.parseJSON(localStorage["book-"+${book.id}+"-section-"+section_id]);
+        	  }
+     		  if (stored_data != null && stored_data.title != null && stored_data.text != null && force_update != 1) {
+	    		   var section = stored_data;
+	               var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
+	               if ($("#section-" + section_id).length == 0) {
+	               	 var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
+	               	 $('#section-data div:last').after(html);
+	               } else {
+	               	 var html = "<h3>" + section.title + "</h3><p>" + section.text + "</p>";
+	               	 $("#section-" + section_id).attr('sync', '1');
+	            	     $("#section-" + section_id).html(html);
+	               }
+	               callback(section_id, true);
+         	  } else {
+		    	   $.getJSON("/view/section?section_id="+ section_id, function(data) {
+		    		   localStorage["book-"+${book.id}+"-section-"+section_id] = JSON.stringify(data);
+		                var section = data;
+		                var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
+		                if ($("#section-" + section_id).length == 0) {
+		                	 var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
+		                	 $('#section-data div:last').after(html);
+		                } else {
+		                	 var html = "<h3>" + section.title + "</h3><p>" + section.text + "</p>";
+		                	 $("#section-" + section_id).attr('sync', '1');
+		             	     $("#section-" + section_id).html(html);
+		                }
+		                callback(section_id, true);
+		            });
+        	  } 
     	  } else {
-    		  callback(false);
+    		  callback(section_id, false);
           }
       }
     	document.onkeydown=jumpPage;
@@ -118,9 +140,10 @@
         'load',
         function () {
           var readerOptions = {
-            panels: Monocle.Panels.Magic,
+            place: localStorage['bookmark-${book.id}'] != null ? $.parseJSON(localStorage['bookmark-${book.id}']) : undefined,
+            panels: Monocle.Panels.ThreePane,
             flipper: Monocle.Flippers.Slider,
-            stylesheet : 'body { font-family: 宋体, 新细明体, Verdana, Arial, sans-serif; font-size:20px; }'
+            stylesheet : 'body { font-family: 宋体, 新细明体, Verdana, Arial, sans-serif; font-size:20px; }  p { text-indent : 2em; }'
           };
 
           var ids = bookData.getComponents();
@@ -209,9 +232,25 @@
             	                      if (last_section >= 0) {
             		                       var total_sections = ids.length;
             		                       for(var i = 0; i < 10; i++) {
-            		                     	  last_section = (last_section + i) % total_sections;
-            		                     	  load_section(ids[last_section], 0, function(fetched) {
-                		                     	  if (fetched) {
+            		                     	  var fetch_section = (last_section + i) % total_sections;
+            		                     	  load_section(ids[fetch_section], 0, function(fetched_section, requested) {
+                		                     	  if (requested) {
+                		                     		 var section_index = $.inArray(fetched_section, ids);
+                		                     		 console.log("complete " + fetched_section);
+                    		                     	  var book = window.reader.getBook(); 
+                		                     	      var locus = window.reader.getPlace().getLocus();
+                		                     	      console.log(window.reader.getPlace().getLocus());
+                		                     	      if (locus != null && locus.componentId == fetched_section) {
+                    		                     	      var pageDiv = window.reader.visiblePages()[0];
+                    		                     	      var component =  book.properties.components[section_index];
+                    		                     	      component.properties.source = { html : $("#section-"+ fetched_section).outerHTML() };
+                    		                     	      component.applyTo(pageDiv, function() {
+                        		                     	     var newPosition =  { page : 1, componentId : window.reader.getPlace().getLocus().componentId }
+                    		                     	    	 window.reader.moveTo(newPosition);
+                        		                     	  });
+                		                     	  	  } else if (section_index < book.properties.components.length) {
+                         		                     	  book.properties.components[section_index] = null;
+                    		                     	  }
                     		                      }
                 		                     });
             		                       }
