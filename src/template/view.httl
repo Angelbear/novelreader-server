@@ -1,281 +1,273 @@
 <!--#set(Book book) -->
-<html>
+<html manifest="/static/manifest/cache.manifest">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="viewport"
 	content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<script
-	src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/static/js/jquery.min.js"></script>
 <link href="/static/css/monocore.css" rel="stylesheet" type="text/css" />
 <link href="/static/css/monoctrl.css" rel="stylesheet" type="text/css" />
 <link href="/static/css/page.css" rel="stylesheet" type="text/css" />
 <script src="/static/js/monocore.js"></script>
 <script src="/static/js/monoctrl.js"></script>
 <script src="/static/js/threepane.js"></script>
+<script src="/static/js/fontselector.js"></script>
+<script src="/static/js/storagecache.js"></script>
 <link rel="apple-touch-icon" href="${book.img}" />
 <meta name="apple-mobile-web-app-title" content="${book.name}">
 <title>${book.name}</title>
 <script type="text/javascript">
-      Monocle.DEBUG = true;
+Monocle.DEBUG = true;
 
-      Monocle.Styles.container.right = "24px";
+Monocle.Styles.container.right = "24px";
 
-      jQuery.fn.outerHTML = function(s) {
-    	    return s
-    	        ? this.before(s).remove()
-    	        : jQuery("<p>").append(this.eq(0).clone()).html();
-    	};
-      
-      var bookData = {
-        getComponents: function () {
-          return [
-			<!--#for(SectionView sec : book.sections) -->
-				'${sec.id}',
-            <!--#end-->
-          ];
-        },
-        getContents: function () {
-          return [
-			<!--#for(SectionView sec : book.sections) -->
-			{
-			    title: "${sec.title}",
-			    src: '${sec.id}'
+jQuery.fn.outerHTML = function(s) {
+	return s
+		? this.before(s).remove()
+		: jQuery("<p>").append(this.eq(0).clone()).html();
+};
+
+var bookData = {
+getComponents: function () {
+				   return [
+					   <!--#for(SectionView sec : book.sections) -->
+					   '${sec.id}',
+				   <!--#end-->
+					   ];
+			   },
+getContents: function () {
+				 return [
+					 <!--#for(SectionView sec : book.sections) -->
+					 {
+title: "${sec.title}",
+	   src: '${sec.id}'
+					 },
+				 <!--#end-->
+					 ]
+			 },
+getComponent: function (cmptId) {
+				  var key = "section-" + cmptId;
+				  console.log("get "+ key);
+				  return { nodes: [document.getElementById(key).cloneNode(true)] };
 			  },
-			<!--#end-->
-          ]
-        },
-        getComponent: function (cmptId) {
-          var key = "section-" + cmptId;
-          console.log("get "+ key);
-          return { nodes: [document.getElementById(key).cloneNode(true)] };
-        },
-        getMetaData: function(key) {
-          return {
-            title: "${book.name}",
-            creator: "${book.name}"
-          }[key];
-        }
-      }
+getMetaData: function(key) {
+				 return {
+title: "${book.name}",
+	   creator: "${book.name}"
+				 }[key];
+			 }
+}
 
 
-      function createBookTitle(reader, contactListeners) {
-        var bt = {}
-        bt.createControlElements = function () {
-          cntr = document.createElement('div');
-          cntr.className = "bookTitle";
-          runner = document.createElement('div');
-          runner.className = "runner";
-          runner.innerHTML = reader.getBook().getMetaData('title');
-          cntr.appendChild(runner);
-          if (contactListeners) {
-            Monocle.Events.listenForContact(cntr, contactListeners);
-          }
-          return cntr;
-        }
-        reader.addControl(bt, 'page');
-        return bt;
-      }
+function createBookTitle(reader, contactListeners) {
+	var bt = {}
+	bt.createControlElements = function () {
+		cntr = document.createElement('div');
+		cntr.className = "bookTitle";
+		runner = document.createElement('div');
+		runner.className = "runner";
+		runner.innerHTML = reader.getBook().getMetaData('title');
+		cntr.appendChild(runner);
+		if (contactListeners) {
+			Monocle.Events.listenForContact(cntr, contactListeners);
+		}
+		return cntr;
+	}
+	reader.addControl(bt, 'page');
+	return bt;
+}
 
-      function jumpPage() {
-    		var event = document.all ? window.event : arguments[0];
-    	  if (event.keyCode==39) {
-        	  window.reader.moveTo( { page : window.reader.getPlace().pageNumber() + 1 } );
-          }
-    	  if (event.keyCode==37) {
-    		  window.reader.moveTo( { page : window.reader.getPlace().pageNumber() - 1 } );
-          }
-    	}
+function jumpPage() {
+	var event = document.all ? window.event : arguments[0];
+	if (event.keyCode==39) {
+		window.reader.moveTo( { page : window.reader.getPlace().pageNumber() + 1 } );
+	}
+	if (event.keyCode==37) {
+		window.reader.moveTo( { page : window.reader.getPlace().pageNumber() - 1 } );
+	}
+}
 
-      function load_section(section_id, force_update, callback) {
-    	  force_update = force_update || 0;
-    	  var need_sync = 0;
-    	  if ($("#section-" + section_id).length > 0) {
-    		  if ($("#section-" + section_id).attr('sync') == '0') {
-    			  need_sync = 1;
-        	  }
-          }
-    	  if (need_sync == 1) {
-        	  var stored_data = null;
-        	  if (localStorage["book-"+${book.id}+"-section-"+section_id] != null) {
-     		    stored_data = $.parseJSON(localStorage["book-"+${book.id}+"-section-"+section_id]);
-        	  }
-     		  if (stored_data != null && stored_data.title != null && stored_data.text != null && force_update != 1) {
-	    		   var section = stored_data;
-	               var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
-	               if ($("#section-" + section_id).length == 0) {
-	               	 var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
-	               	 $('#section-data div:last').after(html);
-	               } else {
-	               	 var html = "<h3>" + section.title + "</h3><p>" + section.text + "</p>";
-	               	 $("#section-" + section_id).attr('sync', '1');
-	            	     $("#section-" + section_id).html(html);
-	               }
-	               callback(section_id, true);
-         	  } else {
-		    	   $.getJSON("/view/section?section_id="+ section_id, function(data) {
-		    		   localStorage["book-"+${book.id}+"-section-"+section_id] = JSON.stringify(data);
-		                var section = data;
-		                var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
-		                if ($("#section-" + section_id).length == 0) {
-		                	 var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
-		                	 $('#section-data div:last').after(html);
-		                } else {
-		                	 var html = "<h3>" + section.title + "</h3><p>" + section.text + "</p>";
-		                	 $("#section-" + section_id).attr('sync', '1');
-		             	     $("#section-" + section_id).html(html);
-		                }
-		                callback(section_id, true);
-		            });
-        	  } 
-    	  } else {
-    		  callback(section_id, false);
-          }
-      }
-    	document.onkeydown=jumpPage;
+function attach_section_data(section_id, section) {
+	if ($("#section-" + section_id).length == 0) {
+		var html = "<div id=\"section-" + section_id + "\" class=\"textData\" sync=\"1\"><h3>" + section.title + "</h3><p>" + section.text + "</p></div>";
+		$('#section-data div:last').after(html);
+	} else {
+		var html = "<h3>" + section.title + "</h3><p>" + section.text + "</p>";
+		$("#section-" + section_id).attr('sync', '1');
+		$("#section-" + section_id).html(html);
+	}
 
-      // Initialize the reader element.
-      Monocle.Events.listen(
-        window,
-        'load',
-        function () {
-          var readerOptions = {
-            place: localStorage['bookmark-${book.id}'] != null ? $.parseJSON(localStorage['bookmark-${book.id}']) : undefined,
-            panels: Monocle.Panels.ThreePane,
-            flipper: Monocle.Flippers.Slider,
-            stylesheet : 'body { font-family: 宋体, 新细明体, Verdana, Arial, sans-serif; font-size:20px; }  p { text-indent : 2em; }'
-          };
+}
 
-          var ids = bookData.getComponents();
-          var jumpPage = null;
-          if (localStorage['bookmark-${book.id}'] != null) {
-            jumpPage = $.parseJSON(localStorage['bookmark-${book.id}']);
-          }
+var LRUCache = LRUStorageCache();
+function load_section(section_id, force_update, callback) {
+	force_update = force_update || 0;
+	var need_sync = 0;
+	if ($("#section-" + section_id).length > 0) {
+		if ($("#section-" + section_id).attr('sync') == '0') {
+			need_sync = 1;
+		}
+	}
+	if (need_sync == 1) {
+		if (LRUCache.getItem("book-"+${book.id}+"-section-"+section_id) != null && force_update != 1) {
+			var section = LRUCache.getItem("book-"+${book.id}+"-section-"+section_id);
+			attach_section_data(section_id, section);
+			callback(section_id, true);
+		} else {
+			$.getJSON("/view/section?section_id="+ section_id, function(data) {
+					var section = data;
+					LRUCache.setItem("book-"+${book.id}+"-section-"+section_id, section);
+					attach_section_data(section_id, section);
+					callback(section_id, true);
+					});
+		}
+	} else {
+		callback(section_id, false);
+	}
+}
+document.onkeydown=jumpPage;
 
-          if ( ids != null) {
-        	  var last_section = 0;
-              if (jumpPage !=null && jumpPage.componentId != null) {
-            	  last_section = $.inArray(String(jumpPage.componentId), ids);
-              }
-              if (last_section >= 0) {
-            	  load_section(ids[last_section], 1, function() {
-            		  Monocle.Reader('reader', bookData, readerOptions, function (rdr) {
-            	            window.reader = rdr;
+// Initialize the reader element.
+Monocle.Events.listen(
+		window,
+		'load',
+		function () {
+		var readerOptions = {
+place: localStorage['bookmark-${book.id}'] != null ? $.parseJSON(localStorage['bookmark-${book.id}']) : null,
+panels: Monocle.Panels.ThreePane,
+flipper: Monocle.Flippers.Slider,
+stylesheet : 'body { font-family: 宋体, 新细明体, Verdana, Arial, sans-serif; font-size:20px; }  p { text-indent : 2em; }'
+};
 
-            	            /* SPINNER */
-            	            var spinner = Monocle.Controls.Spinner(rdr);
-            	            rdr.addControl(spinner, 'page', { hidden: true });
-            	            spinner.listenForUsualDelays('reader');
+var ids = bookData.getComponents();
+var jumpPage = null;
+if (localStorage['bookmark-${book.id}'] != null) {
+jumpPage = $.parseJSON(localStorage['bookmark-${book.id}']);
+}
+
+if ( ids != null) {
+var last_section = 0;
+if (jumpPage !=null && jumpPage.componentId != null) {
+last_section = $.inArray(String(jumpPage.componentId), ids);
+}
+if (last_section >= 0) {
+	load_section(ids[last_section], 1, function() {
+			Monocle.Reader('reader', bookData, readerOptions, function (rdr) {
+				window.reader = rdr;
+
+				/* SPINNER */
+				var spinner = Monocle.Controls.Spinner(rdr);
+				rdr.addControl(spinner, 'page', { hidden: true });
+				spinner.listenForUsualDelays('reader');
 
 
-            	            /* Because the 'reader' element changes size on window resize,
-            	             * we should notify it of this event. */
-            	            Monocle.Events.listen(
-            	              window,
-            	              'resize',
-            	              function () { window.reader.resized() }
-            	            );
+				/* Because the 'reader' element changes size on window resize,
+				 * we should notify it of this event. */
+				Monocle.Events.listen(
+					window,
+					'resize',
+					function () { window.reader.resized() }
+					);
 
-            	            /* MAGNIFIER CONTROL */
-            	            var magnifier = new Monocle.Controls.Magnifier(rdr);
-            	            rdr.addControl(magnifier, 'page');
+				/* FONTSELECTOR CONTROL */
+				var selector = new Monocle.Controls.FontSelector(rdr);
+				rdr.addControl(selector, 'page');
 
-            	            /* The stencil activates internal links */
-            	            var stencil = new Monocle.Controls.Stencil(rdr);
-            	            rdr.addControl(stencil);
-            	            //stencil.toggleHighlights();
+				/* The stencil activates internal links */
+				var stencil = new Monocle.Controls.Stencil(rdr);
+				rdr.addControl(stencil);
+				//stencil.toggleHighlights();
 
-            	            /* PAGE NUMBER RUNNING HEAD */
-					          var pageNumber = {
-					            runners: [],
-					            createControlElements: function (page) {
-					              var cntr = document.createElement('div');
-					              cntr.className = "pageNumber";
-					              var runner = document.createElement('div');
-					              runner.className = "runner";
-					              cntr.appendChild(runner);
-					              this.runners.push(runner);
-					              this.update(page, page.m.place.pageNumber());
-					              return cntr;
-					            },
-					            update: function (page, pageNumber) {
-					              if (pageNumber) {
-					                this.runners[page.m.pageIndex].innerHTML = pageNumber;
-					              }
-					            }
-					          }
-					          rdr.addControl(pageNumber, 'page');
-					          rdr.listen(
-					            'monocle:pagechange',
-					            function (evt) {
-					              pageNumber.update(evt.m.page, evt.m.pageNumber);
-					            }
-					          );
-					            	            
-            	            
-            	            Monocle.Events.listen('reader', 'monocle:loaded', function(evt) {
-            	                if (window.localStorage['bookmark-${book.id}'] != null) {
-            	                    var jumpPage = $.parseJSON(localStorage['bookmark-${book.id}']);
-            	                    if (jumpPage != null) {
-            	                    	window.reader.moveTo( jumpPage );
-            	                    }
-            	                }
-            	                Monocle.Events.listen('reader', 'monocle:pagechange', function(evt) {
-            	                	window.localStorage['bookmark-${book.id}'] = JSON.stringify(window.reader.getPlace().getLocus());
-            	                });
+				/* PAGE NUMBER RUNNING HEAD */
+				var pageNumber = {
+runners: [],
+		 createControlElements: function (page) {
+			 var cntr = document.createElement('div');
+			 cntr.className = "pageNumber";
+			 var runner = document.createElement('div');
+			 runner.className = "runner";
+			 cntr.appendChild(runner);
+			 this.runners.push(runner);
+			 this.update(page, page.m.place.pageNumber());
+			 return cntr;
+		 },
+update: function (page, pageNumber) {
+			if (pageNumber) {
+				this.runners[page.m.pageIndex].innerHTML = pageNumber;
+			}
+		}
+				}
+				rdr.addControl(pageNumber, 'page');
+				rdr.listen(
+						'monocle:pagechange',
+						function (evt) {
+						pageNumber.update(evt.m.page, evt.m.pageNumber);
+						}
+						);
 
-            	                Monocle.Events.listen('reader', 'monocle:turn', function() {
-            	                	var ids = bookData.getComponents();
-            	                	var locus = window.reader.getPlace().getLocus();
-            	                	if ( ids != null && locus != null) {
-            	                   	  var last_section = $.inArray(String(locus.componentId), ids);
-            	                      if (last_section >= 0) {
-            		                       var total_sections = ids.length;
-            		                       for(var i = 0; i < 10; i++) {
-            		                     	  var fetch_section = (last_section + i) % total_sections;
-            		                     	  load_section(ids[fetch_section], 0, function(fetched_section, requested) {
-                		                     	  if (requested) {
-                		                     		 var section_index = $.inArray(fetched_section, ids);
-                		                     		 console.log("complete " + fetched_section);
-                    		                     	  var book = window.reader.getBook(); 
-                		                     	      var locus = window.reader.getPlace().getLocus();
-                		                     	      console.log(window.reader.getPlace().getLocus());
-                		                     	      if (locus != null && locus.componentId == fetched_section) {
-                    		                     	      var pageDiv = window.reader.visiblePages()[0];
-                    		                     	      var component =  book.properties.components[section_index];
-                    		                     	      component.properties.source = { html : $("#section-"+ fetched_section).outerHTML() };
-                    		                     	      component.applyTo(pageDiv, function() {
-                        		                     	     var newPosition =  { page : 1, componentId : window.reader.getPlace().getLocus().componentId }
-                    		                     	    	 window.reader.moveTo(newPosition);
-                        		                     	  });
-                		                     	  	  } else if (section_index < book.properties.components.length) {
-                         		                     	  book.properties.components[section_index] = null;
-                    		                     	  }
-                    		                      }
-                		                     });
-            		                       }
-            	                      }
-            	                    }
-            	                });
-            	            });
-            	            
-            	            var reader = Monocle.Controls.Contents(rdr);
-            	            rdr.addControl(reader, 'popover', { hidden: true });
-            	            createBookTitle(
-            	              rdr,
-            	              {
-            	                start: function () {
-            	                  rdr.showControl(reader);
-            	                }
-            	              }
-            	            );
-            	          });
-                  });
-              }
-          }
-        }
-      );
-    </script>
+
+				Monocle.Events.listen('reader', 'monocle:loaded', function(evt) {
+						if (window.localStorage['bookmark-${book.id}'] != null) {
+						var jumpPage = $.parseJSON(localStorage['bookmark-${book.id}']);
+						if (jumpPage != null) {
+						window.reader.moveTo( jumpPage );
+						}
+						}
+						Monocle.Events.listen('reader', 'monocle:pagechange', function(evt) {
+							window.localStorage['bookmark-${book.id}'] = JSON.stringify(window.reader.getPlace().getLocus());
+							});
+
+						Monocle.Events.listen('reader', 'monocle:turn', function() {
+							var ids = bookData.getComponents();
+							var locus = window.reader.getPlace().getLocus();
+							if ( ids != null && locus != null) {
+							var last_section = $.inArray(String(locus.componentId), ids);
+							if (last_section >= 0) {
+							var total_sections = ids.length;
+							for(var i = 0; i < 10; i++) {
+							var fetch_section = (last_section + i) % total_sections;
+							load_section(ids[fetch_section], 0, function(fetched_section, requested) {
+								if (requested) {
+								var section_index = $.inArray(fetched_section, ids);
+								var book = window.reader.getBook(); 
+								var locus = window.reader.getPlace().getLocus();
+								if (locus != null && locus.componentId == fetched_section) {
+								var pageDiv = window.reader.visiblePages()[0];
+								var component =  book.properties.components[section_index];
+								component.properties.source = { html : $("#section-"+ fetched_section).outerHTML() };
+								component.applyTo(pageDiv, function() {
+									var newPosition =  { page : 1, componentId : window.reader.getPlace().getLocus().componentId }
+									window.reader.moveTo(newPosition);
+									});
+								} else if (section_index < book.properties.components.length) {
+								book.properties.components[section_index] = null;
+								}
+								}
+								});
+							}
+							}
+							}
+						});
+				});
+
+				var reader = Monocle.Controls.Contents(rdr);
+				rdr.addControl(reader, 'popover', { hidden: true });
+				createBookTitle(
+						rdr,
+						{
+start: function () {
+rdr.showControl(reader);
+}
+}
+);
+				});
+});
+}
+}
+}
+);
+</script>
 
 </head>
 

@@ -5,10 +5,7 @@ import httl.Template;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -19,13 +16,10 @@ import net.arnx.jsonic.JSON;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 
 import cn.com.sae.db.HibernateUtil;
 import cn.com.sae.model.novel.Book;
 import cn.com.sae.model.novel.Section;
-import cn.com.sae.model.novel.SectionView;
 import cn.com.sae.utils.DataValidator;
 
 public class Read extends BaseHttpServlet {
@@ -64,7 +58,6 @@ public class Read extends BaseHttpServlet {
 	private static DataValidator viewBookValidator = new DataValidator(
 			viewBookRules);
 
-	@SuppressWarnings("unchecked")
 	private void doViewBook(Map<String, String[]> params,
 			HttpServletResponse response) throws ServletException, IOException {
 		Map<String, String> opts = viewBookValidator

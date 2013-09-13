@@ -248,6 +248,16 @@ div.monelem_controls_magnifier_button {
 	right: 6%;
 }
 
+.monelem_controls_magnifier_big_A {
+	font-size: 20px;
+	opacity: 1.0;
+}
+
+.monelem_controls_magnifier_small_a {
+	font-size: 11px;
+	opacity: 1.0;
+}
+
 /* Overriding table of contents display */
 div.monelem_controls_contents_container {
 	background: #E0D3C0;

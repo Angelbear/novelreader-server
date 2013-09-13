@@ -20,12 +20,16 @@ Monocle.Panels.ThreePane = function (flipper, evtCallbacks) {
       flipper.properties.reader.addControl(p.panels[dir]);
       p.panels[dir].listenTo(evtCallbacks);
       p.panels[dir].setDirection(flipper.constants[dir.toUpperCase()]);
-      var style = (dir == "current" ? { "width": '34%' } :  { "width": k.WIDTH });
+      var style =   { 
+    		  "width": k.WIDTH,
+    		  "top" : '8%',
+    		  "height": '92%'
+      };
       if (dir == "forwards") {
           style["right"] = 0;
       } else if (dir == "backwards") {
           style["left"] = 0;
-      }
+      } 
       p.panels[dir].properties.div.dom.setStyles(style);
     }
   }

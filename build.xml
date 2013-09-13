@@ -26,8 +26,10 @@
 		<include name="**/*.txt" />
 		<include name="**/*.xml" />
 		<include name="**/*.httl" />
-		<include name="**/*.js" />
+        <include name="**/*.js" />
+        <include name="**/*.map" />
 		<include name="**/*.css" />
+		<include name="**/*.manifest" />
 	</patternset>
 
 	<path id="classpath">
